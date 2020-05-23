@@ -1,4 +1,3 @@
-# import HTMLSession from requests_html
 from requests_html import HTMLSession
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -45,7 +44,6 @@ def getstockupdate(resp):
         # show current time
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-        #outf.write("TIME: %s\n" % (dt_string))
         
         # Run JavaScript code on webpage to load stock data
         resp.html.render()
@@ -91,13 +89,10 @@ argv = sys.argv[1:]
 try:
     opts, args = getopt.getopt(argv, 'D:ho:t:')
     Options = dict(opts)
-    #print(args)
-    #print(Options)
     if '-D' in Options.keys():
         parsehtmlfile(Options['-D'])
     else:
         runmain()
-    
 except getopt.GetoptError:
     #Print a message or do something useful
     print('Something went wrong!')
