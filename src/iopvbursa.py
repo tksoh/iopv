@@ -23,8 +23,6 @@ def checkstocklist(name):
     
 def getstockdata(html):
     soup = BeautifulSoup(html, "lxml")
-    
-    labels = soup.find_all(class_="tb_row tb_label")
     etfs = soup.find_all(class_="tb_row tb_data")
     iopvinfo = []
     for row in etfs:
