@@ -9,6 +9,7 @@ import sys
 Url = "http://www.bursamarketplace.com/mkt/themarket/etf"
 Options = {}
 MaxLoop = 3
+GetAllStocks = False
 OutputFile = ""
 HtmlFile = ""
 StockList = (
@@ -25,7 +26,7 @@ def getstockdata(html):
         cell = row.find(class_="tb_name")
         if cell:
             name = cell.get_text().split('\xa0')[-1]
-            if name in StockList:
+            if GetAllStocks or name in StockList:
                 info = [name]
                 info.append(row.find(class_="tb_iopv").get_text())
                 #info.append(row.find(class_="tb_volume").get_text())   // volume info useful?
@@ -96,6 +97,10 @@ try:
     if '-h' in Options.keys():
         showhelp()
         sys.exit(2)
+        
+    if '-a' in Options.keys():
+        GetAllStocks = True
+        
     if '-o' in Options.keys():
         OutputFile = Options['-o']
 
