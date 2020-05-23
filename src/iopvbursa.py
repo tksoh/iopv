@@ -7,9 +7,8 @@ import pprint
 import getopt
 import sys
 
-lookup = ("IOPV", "IOPV Chg")
+Url = "http://www.bursamarketplace.com/mkt/themarket/etf"
 Options = {}
-etf_url = "http://www.bursamarketplace.com/mkt/themarket/etf"
 StockList = (
     "TradePlus Shariah Gold Tracker",
     "TradePlus S&P New China Tracker-MYR",
@@ -78,7 +77,7 @@ def runmain():
     session = HTMLSession()
      
     # Use the object above to connect to needed webpage
-    resp = session.get(etf_url)
+    resp = session.get(Url)
     getstockupdate(resp)
     resp.close()
 
