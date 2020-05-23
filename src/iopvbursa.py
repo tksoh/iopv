@@ -15,11 +15,6 @@ StockList = (
     "TradePlus S&P New China Tracker-MYR",
     "FTSE Bursa Malaysia KLCI ETF",
 )
-
-def checkstocklist(name):
-    for s in StockList:
-        if s in name:
-            return s
     
 def getstockdata(html):
     soup = BeautifulSoup(html, "lxml")
@@ -28,9 +23,10 @@ def getstockdata(html):
     for row in etfs:
         cell = row.find(class_="tb_name")
         if cell:
-            name = checkstocklist(cell.get_text())
-            if name:
-                info = [name, row.find(class_="tb_iopv").get_text()]
+            name = cell.get_text().split('\xa0')[-1]
+            if name in StockList:
+                info = [name]
+                info.append(row.find(class_="tb_iopv").get_text())
                 #info.append(row.find(class_="tb_volume").get_text())   // volume info useful?
                 iopvinfo.append(info)
     
