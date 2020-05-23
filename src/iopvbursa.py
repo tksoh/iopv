@@ -9,6 +9,7 @@ import sys
 Url = "http://www.bursamarketplace.com/mkt/themarket/etf"
 Options = {}
 MaxLoop = 3
+RetryInterval = 3       # wait this many seconds before trying to reload webpage
 GetAllStocks = False
 OutputFile = ""
 HtmlFile = ""
@@ -63,7 +64,7 @@ def getstockupdate(resp):
         if i < MaxLoop:
             i = i + 1
             print("WARNING:\tdata invalid, trying again...\n")
-            time.sleep(2)
+            time.sleep(RetryInterval)
         else:
             print("WARNING:\tmax loop exceeded!\n")
             outf.write('\t'.join([dt_string, "", 'TIMEOUT']))
@@ -92,7 +93,7 @@ def parsehtmlfile(fn):
 argv = sys.argv[1:]
 try:
     # parse command line options
-    opts, args = getopt.getopt(argv, 'ahi:l:o:')
+    opts, args = getopt.getopt(argv, 'ahi:l:o:w:')
     Options = dict(opts)
     if '-h' in Options.keys():
         showhelp()
@@ -109,6 +110,9 @@ try:
 
     if '-i' in Options.keys():
         HtmlFile = Options['-i']
+        
+    if '-w' in Options.keys():
+        RetryInterval = Options['-w']
         
     # get IOPV info
     if HtmlFile:
