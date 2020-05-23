@@ -8,6 +8,9 @@ import sys
 
 Url = "http://www.bursamarketplace.com/mkt/themarket/etf"
 Options = {}
+MaxLoop = 3
+OutputFile = ""
+HtmlFile = ""
 StockList = (
     "TradePlus Shariah Gold Tracker",
     "TradePlus S&P New China Tracker-MYR",
@@ -33,12 +36,9 @@ def getstockdata(html):
 
 def getstockupdate(resp):
     outf = sys.stdout
-    if '-o' in Options.keys():
-        outf = open(Options['-o'], "a")
+    if OutputFile:
+        outf = open(OutputFile, "a")
 
-    maxloop = 3
-    if '-t' in Options.keys():
-        maxloop = Options['-t']
     i = 1
     while True:
         # show current time
@@ -59,7 +59,7 @@ def getstockupdate(resp):
                 outf.write("\n")
             break
 
-        if i < maxloop:
+        if i < MaxLoop:
             i = i + 1
             print("WARNING:\tdata invalid, trying again...\n")
             time.sleep(2)
@@ -79,6 +79,9 @@ def runmain():
     getstockupdate(resp)
     resp.close()
 
+def showhelp():
+    print("Help is on the way...")
+    
 def parsehtmlfile(fn):
     f = open(fn, "rb")
     html = f.read()
@@ -87,10 +90,24 @@ def parsehtmlfile(fn):
     
 argv = sys.argv[1:]
 try:
-    opts, args = getopt.getopt(argv, 'D:ho:t:')
+    # parse command line options
+    opts, args = getopt.getopt(argv, 'ahi:l:o:')
     Options = dict(opts)
-    if '-D' in Options.keys():
-        parsehtmlfile(Options['-D'])
+    if '-h' in Options.keys():
+        showhelp()
+        sys.exit(2)
+    if '-o' in Options.keys():
+        OutputFile = Options['-o']
+
+    if '-l' in Options.keys():
+        MaxLoop = Options['-t']
+
+    if '-i' in Options.keys():
+        HtmlFile = Options['-i']
+        
+    # get IOPV info
+    if HtmlFile:
+        parsehtmlfile(HtmlFile)
     else:
         runmain()
 except getopt.GetoptError:
