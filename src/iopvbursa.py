@@ -8,7 +8,7 @@ import sys
 
 Url = "http://www.bursamarketplace.com/mkt/themarket/etf"
 Options = {}
-MaxLoop = 3
+MaxRetry = 3
 RetryInterval = 3       # wait this many seconds before trying to reload webpage
 GetAllStocks = False
 OutputFile = ""
@@ -61,12 +61,12 @@ def getstockupdate(resp):
                 outf.write("\n")
             break
 
-        if i < MaxLoop:
+        if i < MaxRetry:
             i = i + 1
             print("WARNING:\tdata invalid, trying again...\n")
             time.sleep(RetryInterval)
         else:
-            print("WARNING:\tmax loop exceeded!\n")
+            print("WARNING:\tmax retry exceeded!\n")
             outf.write('\t'.join([dt_string, "", 'TIMEOUT']))
             outf.write("\n")
             break
@@ -106,7 +106,7 @@ try:
         OutputFile = Options['-o']
 
     if '-l' in Options.keys():
-        MaxLoop = Options['-t']
+        MaxRetry = Options['-t']
 
     if '-i' in Options.keys():
         HtmlFile = Options['-i']
