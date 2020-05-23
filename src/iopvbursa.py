@@ -106,7 +106,7 @@ try:
         OutputFile = Options['-o']
 
     if '-l' in Options.keys():
-        MaxRetry = Options['-t']
+        MaxRetry = Options['-l']
 
     if '-i' in Options.keys():
         HtmlFile = Options['-i']
