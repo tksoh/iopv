@@ -26,12 +26,13 @@ def getstockdata(html):
     etfs = soup.find_all(class_="tb_row tb_data")
     iopvinfo = []
     for row in etfs:
-        cell = row.find(class_="tb_name")
-        if cell:
-            name = cell.get_text().split('\xa0')[-1]
+        tbname = row.find(class_="tb_name")
+        tbiopv = row.find(class_="tb_iopv")
+        if tbname and tbiopv:
+            name = tbname.get_text().split('\xa0')[-1]
             if GetAllStocks or name in StockList:
                 info = [name]
-                val = row.find(class_="tb_iopv").get_text()
+                val = tbiopv.get_text()
                 iopv = re.sub(f'[^{re.escape(string.printable)}]', '', val)
                 info.append(iopv)
                 #info.append(row.find(class_="tb_volume").get_text())   // volume info useful?
