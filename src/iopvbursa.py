@@ -5,6 +5,8 @@ import time
 import pprint
 import getopt
 import sys
+import re
+import string
 
 Url = "http://www.bursamarketplace.com/mkt/themarket/etf"
 Options = {}
@@ -29,7 +31,9 @@ def getstockdata(html):
             name = cell.get_text().split('\xa0')[-1]
             if GetAllStocks or name in StockList:
                 info = [name]
-                info.append(row.find(class_="tb_iopv").get_text())
+                val = row.find(class_="tb_iopv").get_text()
+                iopv = re.sub(f'[^{re.escape(string.printable)}]', '', val)
+                info.append(iopv)
                 #info.append(row.find(class_="tb_volume").get_text())   // volume info useful?
                 iopvinfo.append(info)
     
