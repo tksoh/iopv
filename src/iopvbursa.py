@@ -21,6 +21,7 @@ StockList = (
     "TradePlus Shariah Gold Tracker",
     "TradePlus S&P New China Tracker-MYR",
     "FTSE Bursa Malaysia KLCI ETF",
+    #"ABF Malaysia Bond Index Fund",    # debug use, sheet not exists
 )
     
 def getstockdata(html):
@@ -83,14 +84,18 @@ def runmain():
 
         try:
             iopvinfo = getstocklive()
-            for stock in iopvinfo:
-                name, iopv = stock
-                db.add(name, nowtime, iopv)
-            db.log(nowtime, "stock updated successfully.")
-        except ValueError as ve:
-            db.log(nowtime, ve)
         except TimeoutError:
             db.log(nowtime, "Timeout on downloading data")
+            return
+
+        for stock in iopvinfo:
+            try:
+                name, iopv = stock
+                db.add(name, nowtime, iopv)
+            except ValueError as ve:
+                db.log(nowtime, ve)
+
+        db.log(nowtime, "stock update completed.")
     else:
         iopvinfo = getstocklive()
         for stock in iopvinfo:
