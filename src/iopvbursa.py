@@ -7,6 +7,7 @@ import getopt
 import sys
 import re
 import string
+import gspreaddb
 
 Url = "http://www.bursamarketplace.com/mkt/themarket/etf"
 Options = {}
@@ -15,6 +16,7 @@ RetryInterval = 3       # wait this many seconds before trying to reload webpage
 GetAllStocks = False
 OutputFile = ""
 HtmlFile = ""
+SaveToDBase = False
 StockList = (
     "TradePlus Shariah Gold Tracker",
     "TradePlus S&P New China Tracker-MYR",
@@ -35,96 +37,100 @@ def getstockdata(html):
                 val = tbiopv.get_text()
                 iopv = re.sub(f'[^{re.escape(string.printable)}]', '', val)
                 info.append(iopv)
-                #info.append(row.find(class_="tb_volume").get_text())   // volume info useful?
                 iopvinfo.append(info)
     
     return iopvinfo
 
-
-def getstockupdate(resp):
-    outf = sys.stdout
-    if OutputFile:
-        outf = open(OutputFile, "a")
-
-    i = 1
-    while True:
-        # show current time
-        now = datetime.now()
-        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
-        
-        # Run JavaScript code on webpage to load stock data
-        resp.html.render()
-         
-        # extract stock info
-        iopvinfo = getstockdata(resp.html.html)
-        
-        # check loop condition
-        if (iopvinfo):
-            #pprint.pprint(iopvinfo)
-            for stock in iopvinfo:
-                outf.write('\t'.join([dt_string] + stock))
-                outf.write("\n")
-            break
-
-        if i < MaxRetry:
-            i = i + 1
-            print("WARNING:\tdata invalid, trying again...\n")
-            time.sleep(RetryInterval)
-        else:
-            print("WARNING:\tmax retry exceeded!\n")
-            outf.write('\t'.join([dt_string, "", 'TIMEOUT']))
-            outf.write("\n")
-            break
-    #outf.close()
-
-def runmain():
+def getstocklive():
     # create an HTML Session object
     session = HTMLSession()
      
     # Use the object above to connect to needed webpage
     resp = session.get(Url)
-    getstockupdate(resp)
-    resp.close()
+    for i in range(MaxRetry):
+        # Run JavaScript code on webpage to load stock data
+        resp.html.render()
 
-def showhelp():
-    print("Help is on the way...")
-    
-def parsehtmlfile(fn):
+        # extract stock info
+        iopvinfo = getstockdata(resp.html.html)
+        if iopvinfo:
+            return iopvinfo
+
+        # wait before reloading data
+        time.sleep(RetryInterval)
+
+    # loop timeout
+    print("WARNING:\tmax retry exceeded!\n")
+    raise TimeoutError
+
+def getiopvfromfile(fn):
     f = open(fn, "rb")
     html = f.read()
     iopvinfo = getstockdata(html)
-    pprint.pprint(iopvinfo)
+    return iopvinfo
     
-argv = sys.argv[1:]
-try:
-    # parse command line options
-    opts, args = getopt.getopt(argv, 'ahi:l:o:w:')
-    Options = dict(opts)
-    if '-h' in Options.keys():
-        showhelp()
-        sys.exit(2)
-        
-    if '-a' in Options.keys():
-        GetAllStocks = True
-        
-    if '-o' in Options.keys():
-        OutputFile = Options['-o']
+def runmain():
+    # get time stamp for record
+    nowtime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-    if '-l' in Options.keys():
-        MaxRetry = Options['-l']
-
-    if '-i' in Options.keys():
-        HtmlFile = Options['-i']
-        
-    if '-w' in Options.keys():
-        RetryInterval = Options['-w']
-        
-    # get IOPV info
     if HtmlFile:
-        parsehtmlfile(HtmlFile)
+        iopvinfo = getiopvfromfile(HtmlFile)
+        for stock in iopvinfo:
+            print('\t'.join([nowtime] + stock))
+    elif SaveToDBase:
+        from gspreaddb import GspreadDB
+        db = GspreadDB()
+
+        try:
+            iopvinfo = getstocklive()
+            for stock in iopvinfo:
+                name, iopv = stock
+                db.add(name, nowtime, iopv)
+            db.log(nowtime, "stock updated successfully.")
+        except ValueError as ve:
+            db.log(nowtime, ve)
+        except TimeoutError:
+            db.log(nowtime, "Timeout on downloading data")
     else:
+        iopvinfo = getstocklive()
+        for stock in iopvinfo:
+            print('\t'.join([nowtime] + stock))
+
+def showhelp():
+    print("Help is on the way...")
+
+if __name__ == "__main__":
+    argv = sys.argv[1:]
+    try:
+        # parse command line options
+        opts, args = getopt.getopt(argv, 'aghi:l:o:w:')
+        Options = dict(opts)
+        if '-h' in Options.keys():
+            showhelp()
+            sys.exit(2)
+
+        if '-a' in Options.keys():
+            GetAllStocks = True
+
+        if '-o' in Options.keys():
+            OutputFile = Options['-o']
+
+        if '-l' in Options.keys():
+            MaxRetry = Options['-l']
+
+        if '-i' in Options.keys():
+            HtmlFile = Options['-i']
+
+        if '-w' in Options.keys():
+            RetryInterval = Options['-w']
+
+        if '-g' in Options.keys():
+            SaveToDBase = True
+
+        # get IOPV info
         runmain()
-except getopt.GetoptError:
-    #Print a message or do something useful
-    print('Something went wrong!')
-    sys.exit(2)
+
+    except getopt.GetoptError:
+        #Print a message or do something useful
+        print('Invalid command line option or arguments')
+        sys.exit(2)
