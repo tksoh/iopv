@@ -9,13 +9,13 @@ class GspreadDB:
         creds = ServiceAccountCredentials.from_json_keyfile_name(json, scope)
         client = gspread.authorize(creds)
         self.workbook = client.open(wbname)
-        self.stocklist = self.workbook.worksheet('Stock List')
         self.logsheet = self.workbook.worksheet('LOG')
-    
+        self.stocklist = self.workbook.worksheet('Stock List').get_all_records()
+        self.stocksheet = {}
+
     def getstockticker(self, stockname):
         # find and return existing stock
-        slist = self.stocklist.get_all_records()
-        for row in slist:
+        for row in self.stocklist:
             if row['STOCK'] == stockname:
                 return row['TICKER']
                 
@@ -23,12 +23,16 @@ class GspreadDB:
         return None
         
     def getstocksheet(self, stockname):
+        if stockname in self.stocksheet:
+            return self.stocksheet[stockname]
+
         ticker = self.getstockticker(stockname)
         try:
-            return self.workbook.worksheet(ticker)
+            sh = self.workbook.worksheet(ticker)
+            self.stocksheet[stockname] = sh
+            return sh
         except:
-            raise ValueError("Undefined stock '%s'" % stockname)    
-
+            raise ValueError("Undefined stock '%s'" % stockname)
 
     def add(self, stockname, time, iopv):
         sheet = self.getstocksheet(stockname)
