@@ -58,12 +58,15 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     writetodb = False
     jsonfile = 'iopv.json'
+    wbname = 'iopvdb'
     try:
         # parse command line options
-        opts, args = getopt.getopt(argv, 'wj:')
+        opts, args = getopt.getopt(argv, 'b:wj:')
         Options = dict(opts)
         if '-w' in Options.keys():
             writetodb = True
+        if '-b' in Options.keys():
+            wbname = Options['-b']
         if '-j' in Options.keys():
             jsonfile = Options['-j']
     except getopt.GetoptError:
@@ -72,7 +75,7 @@ if __name__ == "__main__":
         sys.exit(2)
 
     # access the database
-    db = GspreadDB(json=jsonfile)
+    db = GspreadDB(wbname, jsonfile)
 
     # make sure we can read the database
     colnames = db.getcolnames("TESTING")
