@@ -17,6 +17,8 @@ GetAllStocks = False
 OutputFile = ""
 HtmlFile = ""
 SaveToDBase = False
+WorkbookName = ''
+JsonFile = 'iopv.json'
 StockList = (
     "TradePlus Shariah Gold Tracker",
     "TradePlus S&P New China Tracker-MYR",
@@ -80,7 +82,7 @@ def runmain():
             print('\t'.join([nowtime] + stock))
     elif SaveToDBase:
         from gspreaddb import GspreadDB
-        db = GspreadDB()
+        db = GspreadDB(WorkbookName, JsonFile)
 
         try:
             iopvinfo = getstocklive()
@@ -108,7 +110,7 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
         # parse command line options
-        opts, args = getopt.getopt(argv, 'aghi:l:o:w:')
+        opts, args = getopt.getopt(argv, 'ab:ghi:j:l:o:w:')
         Options = dict(opts)
         if '-h' in Options.keys():
             showhelp()
@@ -131,6 +133,12 @@ if __name__ == "__main__":
 
         if '-g' in Options.keys():
             SaveToDBase = True
+
+        if '-b' in Options.keys():
+            WorkbookName = Options['-b']
+
+        if '-j' in Options.keys():
+            JsonFile = Options['-j']
 
         # get IOPV info
         runmain()
