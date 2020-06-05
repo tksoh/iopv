@@ -42,6 +42,13 @@ class GspreadDB:
         sheet = self.getstocksheet(stockname)
         sheet.insert_row([time, iopv], 2, value_input_option='USER_ENTERED')
 
+    def addchange(self, stockname, time, iopv):
+        sheet = self.getstocksheet(stockname)
+        # Question: why won't row_values() take value_render_option?
+        liopv = sheet.get('B2', value_render_option='UNFORMATTED_VALUE')[0][0]
+        if not float(liopv) == float(iopv):
+            sheet.insert_row([time, iopv], 2, value_input_option='USER_ENTERED')
+
     def log(self, time, msg):
         self.logsheet.append_row([time, str(msg)])
 
@@ -92,7 +99,7 @@ if __name__ == "__main__":
         nowtime = now.strftime("%d/%m/%Y %H:%M:%S")
         
         # write to a valid sample stock sheet for testing
-        db.add("TESTING", nowtime, 1.234)
+        db.addchange("TESTING", nowtime, 1.235)
 
         # write to unlisted stocks
         try:

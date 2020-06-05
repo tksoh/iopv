@@ -93,7 +93,7 @@ def runmain():
         for stock in iopvinfo:
             try:
                 name, iopv = stock
-                db.add(name, nowtime, iopv)
+                db.addchange(name, nowtime, iopv)
             except ValueError as ve:
                 db.log(nowtime, ve)
 
