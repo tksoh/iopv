@@ -45,7 +45,7 @@ class GspreadDB:
         sheet = self.getstocksheet(stockname)
         return sheet.row_values(row+1)
 
-    def getcolnames(self, stockname):
+    def getheaders(self, stockname):
         sheet = self.getstocksheet(stockname)
         return sheet.row_values(1)
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     db = GspreadDB(wbname, jsonfile)
 
     # make sure we can read the database
-    colnames = db.getcolnames("TESTING")
+    colnames = db.getheaders("TESTING")
     rowdata = db.getdatarow("TESTING", 1)
     pprint.pprint([colnames, rowdata])
 
