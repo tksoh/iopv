@@ -34,10 +34,14 @@ class GspreadDB:
         except:
             raise ValueError("Undefined stock '%s'" % stockname)
 
-    def add(self, stockname, time, iopv):
+    def append(self, stockname, time, iopv):
         sheet = self.getstocksheet(stockname)
         sheet.append_row([time, iopv])
-        
+
+    def add(self, stockname, time, iopv):
+        sheet = self.getstocksheet(stockname)
+        sheet.insert_row([time, iopv], 2)
+
     def log(self, time, msg):
         self.logsheet.append_row([time, str(msg)])
 
