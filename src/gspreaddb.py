@@ -36,11 +36,11 @@ class GspreadDB:
 
     def append(self, stockname, time, iopv):
         sheet = self.getstocksheet(stockname)
-        sheet.append_row([time, iopv])
+        sheet.append_row([time, iopv], value_input_option='USER_ENTERED')
 
     def add(self, stockname, time, iopv):
         sheet = self.getstocksheet(stockname)
-        sheet.insert_row([time, iopv], 2)
+        sheet.insert_row([time, iopv], 2, value_input_option='USER_ENTERED')
 
     def log(self, time, msg):
         self.logsheet.append_row([time, str(msg)])
