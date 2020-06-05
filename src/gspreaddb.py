@@ -48,6 +48,12 @@ class GspreadDB:
         liopv = sheet.get('B2', value_render_option='UNFORMATTED_VALUE')[0][0]
         if not float(liopv) == float(iopv):
             sheet.insert_row([time, iopv], 2, value_input_option='USER_ENTERED')
+        else:
+            try:
+                count = sheet.get('C2', value_render_option='UNFORMATTED_VALUE')[0][0]
+            except KeyError:
+                count = 0
+            sheet.update('C2', count+1, value_input_option='USER_ENTERED')
 
     def log(self, time, msg):
         self.logsheet.append_row([time, str(msg)])
