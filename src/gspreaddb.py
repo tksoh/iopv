@@ -44,12 +44,23 @@ class GspreadDB:
 
     def addchange(self, stockname, time, iopv):
         sheet = self.getstocksheet(stockname)
-        # Question: why won't row_values() take value_render_option?
-        liopv = sheet.get('B2', value_render_option='UNFORMATTED_VALUE')[0][0]
-        if not float(liopv) == float(iopv):
+        iopv0 = float(iopv)
+
+        try:
+            iopv1 = float(sheet.get('B2', value_render_option='UNFORMATTED_VALUE')[0][0])
+        except KeyError:
+            iopv1 = -1
+        try:
+            iopv2 = float(sheet.get('B3', value_render_option='UNFORMATTED_VALUE')[0][0])
+        except KeyError:
+            iopv2 = -1
+
+        if iopv0 != iopv1:
+            sheet.insert_row([time, iopv], 2, value_input_option='USER_ENTERED')
+        elif iopv1 != iopv2:
             sheet.insert_row([time, iopv], 2, value_input_option='USER_ENTERED')
         else:
-            sheet.update('C2', time, value_input_option='USER_ENTERED')
+            sheet.update('A2', time, value_input_option='USER_ENTERED')
 
     def log(self, time, msg):
         self.logsheet.insert_row([time, str(msg)], 2, value_input_option='USER_ENTERED')
