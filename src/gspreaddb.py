@@ -52,7 +52,7 @@ class GspreadDB:
             sheet.update('C2', time, value_input_option='USER_ENTERED')
 
     def log(self, time, msg):
-        self.logsheet.append_row([time, str(msg)])
+        self.logsheet.insert_row([time, str(msg)], 2, value_input_option='USER_ENTERED')
 
     def getdatarow(self, stockname, row):
         sheet = self.getstocksheet(stockname)
