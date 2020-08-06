@@ -12,11 +12,10 @@ from gspreaddb import GspreadDB
 Url = "http://www.bursamarketplace.com/mkt/themarket/etf"
 Options = {}
 GetAllStocks = False
-OutputFile = ""
-InputFile = ""
+Initialize = False
 SaveToDBase = False
 DailyDbName = 'iopvdb-daily'
-StockDbName = 'iopvdb2'
+SourceDbName = 'iopvdb2'
 JsonFile = 'iopv.json'
 
 StockList = (
@@ -141,7 +140,7 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
         # parse command line options
-        opts, args = getopt.getopt(argv, 'ab:ghi:j:l:o:w:')
+        opts, args = getopt.getopt(argv, 'ab:ghIj:s:')
         Options = dict(opts)
         if '-h' in Options.keys():
             showhelp()
@@ -153,19 +152,21 @@ if __name__ == "__main__":
         if '-o' in Options.keys():
             OutputFile = Options['-o']
 
-        if '-i' in Options.keys():
-            InputFile = Options['-i']
+        if '-I' in Options.keys():
+            Initialize = True
 
         if '-g' in Options.keys():
             SaveToDBase = True
 
         if '-b' in Options.keys():
-            WorkbookName = Options['-b']
+            DailyDbName = Options['-b']
+
+        if '-s' in Options.keys():
+            SourceDbName = Options['-s']
 
         if '-j' in Options.keys():
             JsonFile = Options['-j']
 
-        # get IOPV info
         runmain(args)
 
     except getopt.GetoptError:
