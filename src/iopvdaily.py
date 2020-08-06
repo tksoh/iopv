@@ -89,7 +89,7 @@ def updatedaily():
         else:
             dailysheet.insert_row(cells, 2, value_input_option='USER_ENTERED')
 
-    dailydb.log(nowtime, "stock update completed.")
+        dailydb.log(nowtime, "stock update completed for '%s'." % stock)
 
 def initstock(stock):
     nowtime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -125,7 +125,7 @@ def initstock(stock):
         cells.append([nowdate, dopen, high, low, close])
 
     dailysheet.update('A2' , cells, value_input_option='USER_ENTERED')
-    dailydb.log(nowtime, "new stock creation completed.")
+    dailydb.log(nowtime, "new stock creation completed for '%s'." % stock)
 
 def runmain(args):
     if args:
