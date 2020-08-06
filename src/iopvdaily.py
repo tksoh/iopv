@@ -66,7 +66,7 @@ def runmain():
             dailysheet = dailydb.getstocksheet(stock)
         except ValueError as ve:
             dailydb.log(nowtime, ve)
-            next
+            continue
         
         trecs = tickersheet.get_all_records()
         dopen, high, low, close = getdaily(nowdate, trecs)
