@@ -118,12 +118,13 @@ def initstock(stock):
     dates = sorted(getdates(trecs),
             key=lambda x: datetime.strptime(x, "%d/%m/%Y").strftime("%Y-%m-%d"),
             reverse=True)
-    for i, nowdate in enumerate(dates, start=2):
+    cells = []
+    for nowdate in dates:
         dopen, high, low, close = getdaily(nowdate, trecs)
         print(nowdate, dopen, high, low, close)
-        cells = [nowdate, dopen, high, low, close]
-        dailysheet.update('A' + str(i), [cells], value_input_option='USER_ENTERED')
+        cells.append([nowdate, dopen, high, low, close])
 
+    dailysheet.update('A2' , cells, value_input_option='USER_ENTERED')
     dailydb.log(nowtime, "new stock creation completed.")
 
 def runmain(args):
