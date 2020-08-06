@@ -73,6 +73,15 @@ class GspreadDB:
         sheet = self.getstocksheet(stockname)
         return sheet.row_values(1)
 
+    def initsheet(self, stockname, headers):
+        shname = self.getstockticker(stockname)
+        worksheet = self.workbook.add_worksheet(title=shname, rows="100", cols="20")
+        worksheet.update('A1', [headers], value_input_option='USER_ENTERED')
+
+    def deletesheet(self, stockname):
+        sheet = self.getstocksheet(stockname)
+        self.workbook.del_worksheet(sheet)
+
 if __name__ == "__main__":
     from datetime import datetime
     import getopt

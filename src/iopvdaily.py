@@ -49,7 +49,17 @@ def getdaily(tgtdate, records):
 
     return dopen, high, low, close
 
-def runmain():
+def getdates(records):
+    dhash = {}
+    dates = []
+    for rec in records:
+        date, time = rec['TIME'].split(" ")
+        dhash[date] = 1
+
+    dates = [*dhash.keys()]
+    return dates
+
+def updatedaily():
     # get date and time
     now = datetime.now()
     nowdate = now.strftime("%d/%m/%Y")
@@ -80,6 +90,48 @@ def runmain():
             dailysheet.insert_row(cells, 2, value_input_option='USER_ENTERED')
 
     dailydb.log(nowtime, "stock update completed.")
+
+def initstock(stock):
+    nowtime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+    # connect to google sheets
+    dailydb = GspreadDB(DailyDbName, JsonFile)
+    stockdb = GspreadDB(StockDbName, JsonFile)
+
+    try:
+        tickersheet = stockdb.getstocksheet(stock)
+    except ValueError as ve:
+        dailydb.log(nowtime, ve)
+        sys.exit(1)
+
+    try:
+        dailysheet = dailydb.getstocksheet(stock)
+    except ValueError as ve:
+        pass
+    else:
+        dailydb.deletesheet(stock)
+
+    dailydb.initsheet(stock, ['DATE','OPEN','HIGH','LOW','CLOSE','REMARK'])
+    dailysheet = dailydb.getstocksheet(stock)
+
+    trecs = tickersheet.get_all_records()
+    dates = sorted(getdates(trecs),
+            key=lambda x: datetime.strptime(x, "%d/%m/%Y").strftime("%Y-%m-%d"),
+            reverse=True)
+    for i, nowdate in enumerate(dates, start=2):
+        dopen, high, low, close = getdaily(nowdate, trecs)
+        print(nowdate, dopen, high, low, close)
+        cells = [nowdate, dopen, high, low, close]
+        dailysheet.update('A' + str(i), [cells], value_input_option='USER_ENTERED')
+
+    dailydb.log(nowtime, "new stock creation completed.")
+
+def runmain(args):
+    if args:
+        for stock in args:
+            initstock(stock)
+    else:
+        updatedaily()
 
 def showhelp():
     print("Help is on the way...")
@@ -113,7 +165,7 @@ if __name__ == "__main__":
             JsonFile = Options['-j']
 
         # get IOPV info
-        runmain()
+        runmain(args)
 
     except getopt.GetoptError:
         #Print a message or do something useful
