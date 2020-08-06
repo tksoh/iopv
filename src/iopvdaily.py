@@ -58,7 +58,7 @@ def getdates(records):
     dates = [*dhash.keys()]
     return dates
 
-def updatedaily():
+def updatedaily(args):
     # get date and time
     now = datetime.now()
     nowdate = now.strftime("%d/%m/%Y")
@@ -66,10 +66,10 @@ def updatedaily():
 
     # connect to google sheets
     dailydb = GspreadDB(DailyDbName, JsonFile)
-    stockdb = GspreadDB(StockDbName, JsonFile)
+    stockdb = GspreadDB(SourceDbName, JsonFile)
 
     # update data to google sheets
-    for stock in StockList:
+    for stock in args:
         try:
             tickersheet = stockdb.getstocksheet(stock)
             dailysheet = dailydb.getstocksheet(stock)
@@ -90,48 +90,48 @@ def updatedaily():
 
         dailydb.log(nowtime, "stock update completed for '%s'." % stock)
 
-def initstock(stock):
+def initstock(args):
     nowtime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
     # connect to google sheets
     dailydb = GspreadDB(DailyDbName, JsonFile)
-    stockdb = GspreadDB(StockDbName, JsonFile)
+    stockdb = GspreadDB(SourceDbName, JsonFile)
 
-    try:
-        tickersheet = stockdb.getstocksheet(stock)
-    except ValueError as ve:
-        dailydb.log(nowtime, ve)
-        sys.exit(1)
+    for stock in args:
+        try:
+            tickersheet = stockdb.getstocksheet(stock)
+        except ValueError as ve:
+            dailydb.log(nowtime, ve)
+            sys.exit(1)
 
-    try:
+        try:
+            dailysheet = dailydb.getstocksheet(stock)
+        except ValueError as ve:
+            pass
+        else:
+            dailydb.deletesheet(stock)
+
+        dailydb.initsheet(stock, ['DATE','OPEN','HIGH','LOW','CLOSE','REMARK'])
         dailysheet = dailydb.getstocksheet(stock)
-    except ValueError as ve:
-        pass
-    else:
-        dailydb.deletesheet(stock)
 
-    dailydb.initsheet(stock, ['DATE','OPEN','HIGH','LOW','CLOSE','REMARK'])
-    dailysheet = dailydb.getstocksheet(stock)
+        trecs = tickersheet.get_all_records()
+        dates = sorted(getdates(trecs),
+                key=lambda x: datetime.strptime(x, "%d/%m/%Y").strftime("%Y-%m-%d"),
+                reverse=True)
+        cells = []
+        for nowdate in dates:
+            dopen, high, low, close = getdaily(nowdate, trecs)
+            print(nowdate, dopen, high, low, close)
+            cells.append([nowdate, dopen, high, low, close])
 
-    trecs = tickersheet.get_all_records()
-    dates = sorted(getdates(trecs),
-            key=lambda x: datetime.strptime(x, "%d/%m/%Y").strftime("%Y-%m-%d"),
-            reverse=True)
-    cells = []
-    for nowdate in dates:
-        dopen, high, low, close = getdaily(nowdate, trecs)
-        print(nowdate, dopen, high, low, close)
-        cells.append([nowdate, dopen, high, low, close])
-
-    dailysheet.update('A2' , cells, value_input_option='USER_ENTERED')
-    dailydb.log(nowtime, "new stock creation completed for '%s'." % stock)
+        dailysheet.update('A2' , cells, value_input_option='USER_ENTERED')
+        dailydb.log(nowtime, "new stock creation completed for '%s'." % stock)
 
 def runmain(args):
-    if args:
-        for stock in args:
-            initstock(stock)
+    if Initialize:
+        initstock(args)
     else:
-        updatedaily()
+        updatedaily(args)
 
 def showhelp():
     print("Help is on the way...")
