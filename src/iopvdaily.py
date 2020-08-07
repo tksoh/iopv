@@ -41,8 +41,8 @@ def getdaily(tgtdate, records):
     prices = [*tprices.values()]
     prices.sort()
 
-    high = prices[0]
-    low = prices[-1]
+    high = prices[-1]
+    low = prices[0]
 
     return dopen, high, low, close
 
