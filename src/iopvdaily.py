@@ -13,6 +13,7 @@ Url = "http://www.bursamarketplace.com/mkt/themarket/etf"
 Options = {}
 GetAllStocks = False
 Initialize = False
+StockListFile = ''
 SaveToDBase = False
 DailyDbName = 'iopvdb-daily'
 SourceDbName = 'iopvdb2'
@@ -118,7 +119,23 @@ def initstock(args):
         dailysheet.update('A2' , cells, value_input_option='USER_ENTERED')
         dailydb.log(nowtime, "new stock creation completed for '%s'." % stock)
 
+def isvalid(x):
+    skip = (
+        re.search("^\s*#", x) or
+        re.search("^\s*$", x)
+    )
+    return not skip
+
+def getstocklist(filename):
+    lines = open(filename).read().splitlines()
+    flist = [x for x in lines if isvalid(x)]
+    return flist
+
 def runmain(args):
+    if StockListFile:
+        slist = getstocklist(StockListFile)
+        args.extend(slist)
+
     if Initialize:
         initstock(args)
     else:
@@ -131,7 +148,7 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
         # parse command line options
-        opts, args = getopt.getopt(argv, 'ab:ghIj:s:')
+        opts, args = getopt.getopt(argv, 'ab:ghIjL::s:')
         Options = dict(opts)
         if '-h' in Options.keys():
             showhelp()
@@ -157,6 +174,9 @@ if __name__ == "__main__":
 
         if '-j' in Options.keys():
             JsonFile = Options['-j']
+
+        if '-L' in Options.keys():
+            StockListFile = Options['-L']
 
         runmain(args)
 
