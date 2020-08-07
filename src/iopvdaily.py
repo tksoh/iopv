@@ -12,11 +12,16 @@ from gspreaddb import GspreadDB
 Options = {}
 GetAllStocks = False
 Initialize = False
+DebugMode = False
 StockListFile = ''
 SaveToDBase = False
 DailyDbName = 'iopvdb-daily'
 SourceDbName = 'iopvdb2'
 JsonFile = 'iopv.json'
+
+def dlog(*args, **kwargs):
+    if DebugMode: 
+        print(*args, **kwargs)
 
 def getdaily(tgtdate, records):
     dayrecs = []
@@ -63,6 +68,7 @@ def updatedaily(args):
 
     # update data to google sheets
     for stock in args:
+        dlog("Updating %s" % stock)
         try:
             tickersheet = stockdb.getstocksheet(stock)
             dailysheet = dailydb.getstocksheet(stock)
@@ -72,7 +78,7 @@ def updatedaily(args):
         
         trecs = tickersheet.get_all_records()
         dopen, high, low, close = getdaily(nowdate, trecs)
-        print(nowdate, dopen, high, low, close)
+        dlog(nowdate, dopen, high, low, close)
         lastdaily = dailysheet.row_values(2)
         lastdate = lastdaily[0]
         cells = [nowdate, dopen, high, low, close]
@@ -91,6 +97,8 @@ def initstock(args):
     stockdb = GspreadDB(SourceDbName, JsonFile)
 
     for stock in args:
+        dlog("Initializing %s" % stock)
+
         try:
             tickersheet = stockdb.getstocksheet(stock)
         except ValueError as ve:
@@ -105,7 +113,7 @@ def initstock(args):
         cells = []
         for nowdate in dates:
             dopen, high, low, close = getdaily(nowdate, trecs)
-            print(nowdate, dopen, high, low, close)
+            dlog(nowdate, dopen, high, low, close)
             cells.append([nowdate, dopen, high, low, close])
 
         dailysheet.update('A2' , cells, value_input_option='USER_ENTERED')
@@ -140,7 +148,7 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
         # parse command line options
-        opts, args = getopt.getopt(argv, 'ab:ghIjL::s:')
+        opts, args = getopt.getopt(argv, 'ab:DghIjL::s:')
         Options = dict(opts)
         if '-h' in Options.keys():
             showhelp()
@@ -157,6 +165,9 @@ if __name__ == "__main__":
 
         if '-g' in Options.keys():
             SaveToDBase = True
+
+        if '-D' in Options.keys():
+            DebugMode = True
 
         if '-b' in Options.keys():
             DailyDbName = Options['-b']
