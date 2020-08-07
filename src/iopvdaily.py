@@ -104,16 +104,7 @@ def initstock(args):
             dailydb.log(nowtime, ve)
             sys.exit(1)
 
-        try:
-            dailysheet = dailydb.getstocksheet(stock)
-        except ValueError as ve:
-            pass
-        else:
-            dailydb.deletesheet(stock)
-
-        dailydb.initsheet(stock, ['DATE','OPEN','HIGH','LOW','CLOSE','REMARK'])
-        dailysheet = dailydb.getstocksheet(stock)
-
+        dailysheet = dailydb.initsheet(stock, ['DATE','OPEN','HIGH','LOW','CLOSE','REMARK'])
         trecs = tickersheet.get_all_records()
         dates = sorted(getdates(trecs),
                 key=lambda x: datetime.strptime(x, "%d/%m/%Y").strftime("%Y-%m-%d"),

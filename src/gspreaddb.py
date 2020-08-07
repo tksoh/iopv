@@ -74,9 +74,14 @@ class GspreadDB:
         return sheet.row_values(1)
 
     def initsheet(self, stockname, headers):
-        shname = self.getstockticker(stockname)
-        worksheet = self.workbook.add_worksheet(title=shname, rows="100", cols="20")
-        worksheet.update('A1', [headers], value_input_option='USER_ENTERED')
+        try:
+            sheet = self.getstocksheet(stockname)
+            sheet.clear()
+        except ValueError as ve:
+            sheet = self.workbook.add_worksheet(title=shname, rows="100", cols="20")
+
+        sheet.update('A1', [headers], value_input_option='USER_ENTERED')
+        return sheet
 
     def deletesheet(self, stockname):
         sheet = self.getstocksheet(stockname)
