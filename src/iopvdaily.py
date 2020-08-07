@@ -9,7 +9,6 @@ import re
 import string
 from gspreaddb import GspreadDB
 
-Url = "http://www.bursamarketplace.com/mkt/themarket/etf"
 Options = {}
 GetAllStocks = False
 Initialize = False
@@ -18,13 +17,6 @@ SaveToDBase = False
 DailyDbName = 'iopvdb-daily'
 SourceDbName = 'iopvdb2'
 JsonFile = 'iopv.json'
-
-StockList = (
-    #"TradePlus Shariah Gold Tracker",
-    "TradePlus S&P New China Tracker-MYR",
-    #"FTSE Bursa Malaysia KLCI ETF",
-    #"ABF Malaysia Bond Index Fund",    # debug use, sheet not exists
-)
 
 def getdaily(tgtdate, records):
     dayrecs = []
