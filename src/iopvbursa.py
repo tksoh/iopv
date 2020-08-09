@@ -19,13 +19,9 @@ HtmlFile = ""
 SaveToDBase = False
 WorkbookName = ''
 JsonFile = 'iopv.json'
-StockList = (
-    "TradePlus Shariah Gold Tracker",
-    "TradePlus S&P New China Tracker-MYR",
-    "FTSE Bursa Malaysia KLCI ETF",
-    #"ABF Malaysia Bond Index Fund",    # debug use, sheet not exists
-)
-    
+StockListFile = ''
+StockList = []
+
 def getstockdata(html):
     soup = BeautifulSoup(html, "lxml")
     etfs = soup.find_all(class_="tb_row tb_data")
@@ -71,10 +67,27 @@ def getiopvfromfile(fn):
     html = f.read()
     iopvinfo = getstockdata(html)
     return iopvinfo
-    
-def runmain():
+
+def isvalid(x):
+    skip = (
+        re.search("^\s*#", x) or
+        re.search("^\s*$", x)
+    )
+    return not skip
+
+def getstocklist(filename):
+    lines = open(filename).read().splitlines()
+    flist = [x for x in lines if isvalid(x)]
+    return flist
+
+def runmain(args):
     # get time stamp for record
     nowtime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+    StockList.extend(args)
+    if StockListFile:
+        slist = getstocklist(StockListFile)
+        StockList.extend(slist)
 
     if HtmlFile:
         iopvinfo = getiopvfromfile(HtmlFile)
@@ -110,7 +123,7 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     try:
         # parse command line options
-        opts, args = getopt.getopt(argv, 'ab:ghi:j:l:o:w:')
+        opts, args = getopt.getopt(argv, 'ab:ghi:j:l:L:o:w:')
         Options = dict(opts)
         if '-h' in Options.keys():
             showhelp()
@@ -140,8 +153,11 @@ if __name__ == "__main__":
         if '-j' in Options.keys():
             JsonFile = Options['-j']
 
+        if '-L' in Options.keys():
+            StockListFile = Options['-L']
+
         # get IOPV info
-        runmain()
+        runmain(args)
 
     except getopt.GetoptError:
         #Print a message or do something useful
