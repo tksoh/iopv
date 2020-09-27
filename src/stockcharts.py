@@ -70,15 +70,17 @@ def generate_kdj(df, window=9):
 
     for i, cn in enumerate(closes):
         if i < window:
-            kv.append('')
-            dv.append('')
-            continue
+            start = 0
+            end = i + 1
+        else:
+            start = i - window + 1
+            end = i + 1
 
-        ln = min(lows[i-window:i])
-        hn = max(highs[i-window:i])
+        ln = min(lows[start:end])
+        hn = max(highs[start:end])
         rsv = (cn - ln) / (hn - ln) * 100
-        kvn1 = kv[i-1] if kv[i-1] else 50
-        dvn1 = dv[i-1] if dv[i-1] else 50
+        kvn1 = kv[i-1] if i > 0 else 50
+        dvn1 = dv[i-1] if i > 0 else 50
         kvn = kvn1*2/3 + rsv/3
         dvn = dvn1*2/3 + kvn/3
         kv.append(kvn)
@@ -152,7 +154,7 @@ if __name__ == "__main__":
     slist = []
     try:
         # parse command line options
-        opts, args = getopt.getopt(argv, 'ab:DghIjL::s:')
+        opts, args = getopt.getopt(argv, 'L:')
         Options = dict(opts)
 
         if '-L' in Options.keys():
