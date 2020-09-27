@@ -114,32 +114,32 @@ def generate_kdj(df, window=9):
 def make_chart(stocklist):
     assert slist
 
-    rows = 1
-    cols = 1
     for stock in stocklist:
+        # get OHLC data and generate indicators
         df = load_gspread_stock(stock)
         mov = make_moving_average(df, window=60)
         kv, dv = generate_kdj(df)
 
-        i = 1
-        fig = make_subplots(rows=rows, cols=cols, specs=[[{"secondary_y": True}]])
+        # plot stock chart with embedded indicators
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
         fig.add_trace(
             go.Candlestick(x=df['DATE'], open=df['OPEN'], high=df['HIGH'],
-                           low=df['LOW'], close=df['CLOSE'], name="Candle"), row=1, col=i
+                           low=df['LOW'], close=df['CLOSE'], name="Candle")
         )
         fig.add_trace(
-            go.Scatter(x=df.DATE, y=mov, mode='lines', name="MA60", line={'color': "green"}),
-            secondary_y=False, row=1, col=i
+            go.Scatter(x=df.DATE, y=mov, mode='lines', name="MA60",
+                       line={'color': "green"}),
         )
         fig.add_trace(
-            go.Scatter(x=sorted(df.DATE), y=kv, name="K9", line={'color': "blue"}),
-            secondary_y=True, row=1, col=i
+            go.Scatter(x=sorted(df.DATE), y=kv, name="K9",
+                       line={'color': "blue"}), secondary_y=True
         )
         fig.add_trace(
-            go.Scatter(x=sorted(df.DATE), y=dv, name="D9", line={'color': "orange"}),
-            secondary_y=True, row=1, col=i
+            go.Scatter(x=sorted(df.DATE), y=dv, name="D9",
+                       line={'color': "orange"}), secondary_y=True
         )
 
+        # generate chart html
         # fig.update_layout(xaxis_rangeslider_visible=False)
         fig.update_layout(title_text=f"{stock}", title_font_size=30)
         print(f'Writing: {stock}.html')
