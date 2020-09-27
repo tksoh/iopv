@@ -113,6 +113,19 @@ def generate_kdj(df, window=9):
     return kv, dv
 
 
+def get_missing_dates(df):
+    # build complete timepline from start date to end date
+    start_date, end_date = sorted([df['DATE'].iloc[0], df['DATE'].iloc[-1]])
+    all_dates = pd.date_range(start=start_date, end=end_date)
+
+    # retrieve the dates that ARE in the original dataset
+    in_dates = [d.strftime("%Y-%m-%d") for d in pd.to_datetime(df['DATE'])]
+
+    # define dates with missing values
+    missing = [d for d in all_dates.strftime("%Y-%m-%d").tolist() if d not in in_dates]
+    return missing
+
+
 def make_chart(stocklist):
     assert slist
 
@@ -142,7 +155,10 @@ def make_chart(stocklist):
         )
 
         # generate chart html
-        # fig.update_layout(xaxis_rangeslider_visible=False)
+        # hide dates with no values
+        missing_dates = get_missing_dates(df)
+        fig.update_xaxes(rangebreaks=[dict(values=missing_dates)])
+
         fig.update_layout(title_text=f"{stock}", title_font_size=30)
         print(f'Writing: {stock}.html')
         plotly.offline.plot(fig, filename=f'{stock}.html')
