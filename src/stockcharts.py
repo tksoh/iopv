@@ -176,7 +176,7 @@ def make_chart(df, stock):
             f'<b>K9:</b>{kv[-1]:.2f}  <b>D9:</b>{dv[-1]:.2f}  ' \
             f'<b>Date:</b>{dt}' \
             f'</span>'
-    fig.update_layout(title_text=title, title_font_size=30)
+    fig.update_layout(title_text=title, title_font_size=30, hovermode='x')
     filename = stock.replace(' ', '_')
     print(f'Writing: {filename}.html')
     plotly.offline.plot(fig, filename=f'{filename}.html')
