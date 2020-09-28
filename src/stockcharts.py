@@ -68,18 +68,20 @@ def generate_kdj(df, window=9):
     closes = list(df_asc.CLOSE)
 
     for i, cn in enumerate(closes):
-        if i < window:
-            start = 0
-            end = i + 1
-        else:
-            start = i - window + 1
-            end = i + 1
+        if i+1 < window:
+            kv.append('')
+            dv.append('')
+            continue
 
-        ln = min(lows[start:end])
-        hn = max(highs[start:end])
+        start = i - window + 1
+        end = i + 1
+        ll = lows[start : end]
+        hl = highs[start : end]
+        ln = min(ll)
+        hn = max(hl)
         rsv = (cn - ln) / (hn - ln) * 100
-        kvn1 = kv[i-1] if i > 0 else 50
-        dvn1 = dv[i-1] if i > 0 else 50
+        kvn1 = kv[i-1] if kv[i-1] else 50
+        dvn1 = dv[i-1] if dv[i-1] else 50
         kvn = kvn1*2/3 + rsv/3
         dvn = dvn1*2/3 + kvn/3
         kv.append(kvn)
