@@ -6,7 +6,7 @@ from plotly.subplots import make_subplots
 import pandas as pd
 from gspreaddb import GspreadDB
 from utils import getstocklist
-
+from datetime import datetime
 
 DailyDbName = 'iopvdb-daily'
 JsonFile = 'iopv.json'
@@ -158,10 +158,16 @@ def make_chart(stocklist):
         # hide dates with no values
         missing_dates = get_missing_dates(df)
         fig.update_xaxes(rangebreaks=[dict(values=missing_dates)])
-
-        fig.update_layout(title_text=f"{stock}", title_font_size=30)
-        print(f'Writing: {stock}.html')
-        plotly.offline.plot(fig, filename=f'{stock}.html')
+        dt = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+        title = f'{stock}<br>'\
+                f'<span style="font-size: 16px;">' \
+                f'<b>K9:</b>{kv[-1]:.2f}  <b>D9:</b>{dv[-1]:.2f}  ' \
+                f'<b>Date:</b>{dt}' \
+                f'</span>'
+        fig.update_layout(title_text=title, title_font_size=30)
+        filename = stock.replace(' ', '_')
+        print(f'Writing: {filename}.html')
+        plotly.offline.plot(fig, filename=f'{filename}.html')
         # fig.show()
 
 
