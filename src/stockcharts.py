@@ -12,8 +12,7 @@ DailyDbName = 'iopvdb-daily'
 JsonFile = 'iopv.json'
 
 
-def load_gspread_stock(stock):
-    dailydb = GspreadDB(DailyDbName, JsonFile)
+def load_gspread_stock(dailydb, stock):
     dailysheet = dailydb.getstocksheet(stock)
     df = pd.DataFrame(dailysheet.get_all_records())
     df['DATE'] = pd.to_datetime(df.DATE, format='%d/%m/%Y')
@@ -129,9 +128,10 @@ def get_missing_dates(df):
 def make_chart(stocklist):
     assert slist
 
+    dailydb = GspreadDB(DailyDbName, JsonFile)
     for stock in stocklist:
         # get OHLC data and generate indicators
-        df = load_gspread_stock(stock)
+        df = load_gspread_stock(dailydb, stock)
         mov = make_moving_average(df, window=60)
         kv, dv = generate_kdj(df)
 
