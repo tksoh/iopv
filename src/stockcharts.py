@@ -41,7 +41,7 @@ def make_candle(df, name='candle'):
 
 
 def make_moving_average(df, window=20, name='MA'):
-    ma = df.CLOSE.rolling(window=window, min_periods=1).mean()
+    ma = df.CLOSE.rolling(window=window).mean()
 
     trace = {
         'x': df.DATE,
@@ -127,65 +127,84 @@ def get_missing_dates(df):
     return missing
 
 
-def make_chart(stocklist):
+def make_stock_charts(stocklist):
     assert slist
 
     dailydb = GspreadDB(DailyDbName, JsonFile)
     for stock in stocklist:
-        # get OHLC data and generate indicators
-        df = load_gspread_stock(dailydb, stock)
-        mov = make_moving_average(df, window=60)
-        kv, dv = generate_kdj(df)
+        df = load_gspread_stock(dailydb, stock).sort_values('DATE')
+        make_chart(df, stock)
 
-        # plot stock chart with embedded indicators
-        fig = make_subplots(specs=[[{"secondary_y": True}]])
-        fig.add_trace(
-            go.Candlestick(x=df['DATE'], open=df['OPEN'], high=df['HIGH'],
-                           low=df['LOW'], close=df['CLOSE'], name="Candle")
-        )
-        fig.add_trace(
-            go.Scatter(x=df.DATE, y=mov, mode='lines', name="MA60",
-                       line={'color': "green"}),
-        )
-        fig.add_trace(
-            go.Scatter(x=sorted(df.DATE), y=kv, name="K9",
-                       line={'color': "blue"}), secondary_y=True
-        )
-        fig.add_trace(
-            go.Scatter(x=sorted(df.DATE), y=dv, name="D9",
-                       line={'color': "orange"}), secondary_y=True
-        )
 
-        # generate chart html
-        # hide dates with no values
-        missing_dates = get_missing_dates(df)
-        fig.update_xaxes(rangebreaks=[dict(values=missing_dates)])
-        dt = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
-        title = f'{stock}<br>'\
-                f'<span style="font-size: 16px;">' \
-                f'<b>K9:</b>{kv[-1]:.2f}  <b>D9:</b>{dv[-1]:.2f}  ' \
-                f'<b>Date:</b>{dt}' \
-                f'</span>'
-        fig.update_layout(title_text=title, title_font_size=30)
-        filename = stock.replace(' ', '_')
-        print(f'Writing: {filename}.html')
-        plotly.offline.plot(fig, filename=f'{filename}.html')
-        # fig.show()
+def make_csv_chart(filename):
+    df = pd.read_csv(filename).sort_values('DATE')
+    make_chart(df, filename)
+
+
+def make_chart(df, stock):
+    # generate stock indicators
+    msize = 60
+    mov = make_moving_average(df, window=msize)
+    kv, dv = generate_kdj(df)
+
+    # plot stock chart with embedded indicators
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.add_trace(
+        go.Candlestick(x=df['DATE'], open=df['OPEN'], high=df['HIGH'],
+                       low=df['LOW'], close=df['CLOSE'], name="Candle")
+    )
+    fig.add_trace(
+        go.Scatter(x=df.DATE, y=mov, mode='lines', name=f"MA{msize}",
+                   line={'color': "green"}),
+    )
+    fig.add_trace(
+        go.Scatter(x=df.DATE, y=kv, name="K9",
+                   line={'color': "blue"}), secondary_y=True
+    )
+    fig.add_trace(
+        go.Scatter(x=df.DATE, y=dv, name="D9",
+                   line={'color': "orange"}), secondary_y=True
+    )
+
+    # generate chart html
+    # hide dates with no values
+    missing_dates = get_missing_dates(df)
+    fig.update_xaxes(rangebreaks=[dict(values=missing_dates)])
+    dt = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+    title = f'{stock}<br>'\
+            f'<span style="font-size: 16px;">' \
+            f'<b>K9:</b>{kv[-1]:.2f}  <b>D9:</b>{dv[-1]:.2f}  ' \
+            f'<b>Date:</b>{dt}' \
+            f'</span>'
+    fig.update_layout(title_text=title, title_font_size=30)
+    filename = stock.replace(' ', '_')
+    print(f'Writing: {filename}.html')
+    plotly.offline.plot(fig, filename=f'{filename}.html')
+    # fig.show()
 
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
     slist = []
+    CSVfile = None
+    StockListFile = None
     try:
         # parse command line options
-        opts, args = getopt.getopt(argv, 'L:')
+        opts, args = getopt.getopt(argv, 'L:s:')
         Options = dict(opts)
 
         if '-L' in Options.keys():
             StockListFile = Options['-L']
-            slist = getstocklist(StockListFile)
+        if '-s' in Options.keys():
+            CSVfile = Options['-s']
     except getopt.GetoptError:
         print('Invalid command line option or arguments')
         sys.exit(2)
 
-    make_chart(slist)
+    if CSVfile:
+        make_csv_chart(CSVfile)
+    elif StockListFile:
+        slist = getstocklist(StockListFile)
+        make_stock_charts(slist)
+    else:
+        print("nothing to do")
