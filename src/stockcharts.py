@@ -1,3 +1,4 @@
+import os
 import sys
 import getopt
 import plotly
@@ -10,7 +11,7 @@ from datetime import datetime
 
 DailyDbName = 'iopvdb-daily'
 JsonFile = 'iopv.json'
-
+OutputFile = 'etf_charts.html'
 
 def load_gspread_stock(dailydb, stock):
     dailysheet = dailydb.getstocksheet(stock)
@@ -131,10 +132,19 @@ def make_stock_charts(stocklist):
     assert slist
 
     dailydb = GspreadDB(DailyDbName, JsonFile)
+    figs = []
     for stock in stocklist:
         df = load_gspread_stock(dailydb, stock).sort_values('DATE')
-        make_chart(df, stock)
+        figs.append(make_chart(df, stock))
 
+    try:
+        os.rename(OutputFile, f'{OutputFile}.org')
+    except FileNotFoundError:
+        pass
+
+    with open(OutputFile, 'a') as f:
+        for fig in figs:
+            f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 
 def make_csv_chart(filename):
     df = pd.read_csv(filename).sort_values('DATE')
@@ -177,11 +187,7 @@ def make_chart(df, stock):
             f'<b>Date:</b>{dt}' \
             f'</span>'
     fig.update_layout(title_text=title, title_font_size=30, hovermode='x')
-    filename = stock.replace(' ', '_')
-    print(f'Writing: {filename}.html')
-    plotly.offline.plot(fig, filename=f'{filename}.html')
-    # fig.show()
-
+    return fig
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
@@ -190,13 +196,15 @@ if __name__ == "__main__":
     StockListFile = None
     try:
         # parse command line options
-        opts, args = getopt.getopt(argv, 'L:s:')
+        opts, args = getopt.getopt(argv, 'L:s:o:')
         Options = dict(opts)
 
         if '-L' in Options.keys():
             StockListFile = Options['-L']
         if '-s' in Options.keys():
             CSVfile = Options['-s']
+        if '-o' in Options.keys():
+            OutputFile = Options['-o']
     except getopt.GetoptError:
         print('Invalid command line option or arguments')
         sys.exit(2)
