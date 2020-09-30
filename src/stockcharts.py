@@ -148,7 +148,14 @@ def make_stock_charts(stocklist):
 
 def make_csv_chart(filename):
     df = pd.read_csv(filename).sort_values('DATE')
-    make_chart(df, filename)
+    fig = make_chart(df, filename)
+    outfile = 'sample.html'
+    try:
+        os.rename(outfile, f'{outfile}.org')
+    except FileNotFoundError:
+        pass
+    with open(outfile, 'a') as f:
+        f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 
 
 def make_chart(df, stock):
