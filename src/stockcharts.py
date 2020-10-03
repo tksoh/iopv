@@ -147,7 +147,9 @@ def make_stock_charts(stocklist):
             f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 
 def make_csv_chart(filename):
-    df = pd.read_csv(filename).sort_values('DATE')
+    df = pd.read_csv(filename)
+    df['DATE'] = pd.to_datetime(df.DATE, format='%d/%m/%Y')
+    df = df.sort_values('DATE')
     fig = make_chart(df, filename)
     outfile = 'sample.html'
     try:
