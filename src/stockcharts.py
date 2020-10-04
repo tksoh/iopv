@@ -137,8 +137,13 @@ def make_stock_charts(stocklist):
         df = load_gspread_stock(dailydb, stock).sort_values('DATE')
         figs.append(make_chart(df, stock))
 
+    backup = f'{OutputFile}.org'
     try:
-        os.rename(OutputFile, f'{OutputFile}.org')
+        os.remove(backup)
+    except FileNotFoundError:
+        pass
+    try:
+        os.rename(OutputFile, backup)
     except FileNotFoundError:
         pass
 
@@ -151,9 +156,16 @@ def make_csv_chart(filename):
     df['DATE'] = pd.to_datetime(df.DATE, format='%d/%m/%Y')
     df = df.sort_values('DATE')
     fig = make_chart(df, filename)
+
+    # make backup and write chart to html file
     outfile = 'sample.html'
+    backup = f'{outfile}.org'
     try:
-        os.rename(outfile, f'{outfile}.org')
+        os.remove(backup)
+    except FileNotFoundError:
+        pass
+    try:
+        os.rename(outfile, backup)
     except FileNotFoundError:
         pass
     with open(outfile, 'a') as f:
