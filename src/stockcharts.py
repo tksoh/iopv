@@ -115,6 +115,13 @@ def generate_kdj(df, window=9):
     return kv, dv
 
 
+def get_change(df):
+    close1 = df.CLOSE.iloc[-1]
+    close2 = df.CLOSE.iloc[-2]
+    change = (close1/close2 - 1) * 100
+    return close1, change
+
+
 def get_missing_dates(df):
     # build complete timepline from start date to end date
     start_date, end_date = sorted([df['DATE'].iloc[0], df['DATE'].iloc[-1]])
@@ -151,6 +158,7 @@ def make_stock_charts(stocklist):
         for fig in figs:
             f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 
+
 def make_csv_chart(filename):
     df = pd.read_csv(filename)
     df['DATE'] = pd.to_datetime(df.DATE, format='%d/%m/%Y')
@@ -177,6 +185,7 @@ def make_chart(df, stock):
     msize = 60
     mov = make_moving_average(df, window=msize)
     kv, dv = generate_kdj(df)
+    cls, chg = get_change(df)
 
     # plot stock chart with embedded indicators
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -205,6 +214,7 @@ def make_chart(df, stock):
     title = f'{stock}<br>'\
             f'<span style="font-size: 16px;">' \
             f'<b>K9:</b>{kv[-1]:.2f}  <b>D9:</b>{dv[-1]:.2f}  ' \
+            f'<b>CLOSE:</b>{cls:.2f} ({chg:.2f}%)  ' \
             f'<b>Date:</b>{dt}' \
             f'</span>'
     fig.update_layout(title_text=title, title_font_size=30, hovermode='x')
