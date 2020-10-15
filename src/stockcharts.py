@@ -118,8 +118,9 @@ def generate_kdj(df, window=9):
 def get_change(df):
     close1 = df.CLOSE.iloc[-1]
     close2 = df.CLOSE.iloc[-2]
-    change = (close1/close2 - 1) * 100
-    return close1, change
+    change = close1 - close2
+    pct = (close1/close2 - 1) * 100
+    return close1, change, pct
 
 
 def get_missing_dates(df):
@@ -185,7 +186,7 @@ def make_chart(df, stock):
     msize = 60
     mov = make_moving_average(df, window=msize)
     kv, dv = generate_kdj(df)
-    cls, chg = get_change(df)
+    cls, chg, chg_pct = get_change(df)
 
     # plot stock chart with embedded indicators
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -214,7 +215,7 @@ def make_chart(df, stock):
     title = f'{stock}<br>'\
             f'<span style="font-size: 16px;">' \
             f'<b>K9:</b>{kv[-1]:.2f}  <b>D9:</b>{dv[-1]:.2f}  ' \
-            f'<b>CLOSE:</b>{cls:.2f} ({chg:.2f}%)  ' \
+            f'<b>CLOSE:</b>{cls:.2f} {chg:+.2f} {chg_pct:+.2f}%  ' \
             f'<b>Date:</b>{dt}' \
             f'</span>'
     fig.update_layout(title_text=title, title_font_size=30, hovermode='x')
