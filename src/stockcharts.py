@@ -1,6 +1,8 @@
 import os
 import sys
 import getopt
+import pyrebase
+import json
 import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -9,9 +11,30 @@ from gspreaddb import GspreadDB
 from utils import getstocklist
 from datetime import datetime
 
+
 DailyDbName = 'iopvdb-daily'
 JsonFile = 'iopv.json'
 OutputFile = 'etf_charts.html'
+firebase_config_file = 'firebase_config.json'
+
+
+def load_firebase_stock(db, dbase_id, stock):
+    stocklist = db.child(dbase_id).child('Stock List').get()
+    for st in stocklist.each():
+        val = st.val()
+        try:
+            if val['STOCK'] == stock:
+                ticker = val['TICKER']
+                stock_data = db.child(dbase_id).child(ticker).get()
+                records = []
+                for rec in stock_data.each():
+                    data = rec.val()
+                    records.append(data)
+                df = pd.DataFrame(records)
+                return df
+        except TypeError:
+            pass
+    return None
 
 def load_gspread_stock(dailydb, stock):
     dailysheet = dailydb.getstocksheet(stock)
@@ -160,6 +183,38 @@ def make_stock_charts(stocklist):
             f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 
 
+
+def make_firebase_charts(stocklist):
+    assert slist
+
+    with open(firebase_config_file) as f:
+        firebase_config = json.load(f)
+
+    firebase_connect = firebase_config['firebase_connect']
+    dbase_id = firebase_config['firebase_dbase_id']
+    firebase = pyrebase.initialize_app(firebase_connect)
+    db = firebase.database()
+
+    figs = []
+    for stock in stocklist:
+        df = load_firebase_stock(db, dbase_id, stock).sort_values('DATE')
+        figs.append(make_chart(df, stock))
+
+    backup = f'{OutputFile}.org'
+    try:
+        os.remove(backup)
+    except FileNotFoundError:
+        pass
+    try:
+        os.rename(OutputFile, backup)
+    except FileNotFoundError:
+        pass
+
+    with open(OutputFile, 'a') as f:
+        for fig in figs:
+            f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
+
+
 def make_csv_chart(filename):
     df = pd.read_csv(filename)
     df['DATE'] = pd.to_datetime(df.DATE, format='%d/%m/%Y')
@@ -226,9 +281,10 @@ if __name__ == "__main__":
     slist = []
     CSVfile = None
     StockListFile = None
+    UseFirebase = False
     try:
         # parse command line options
-        opts, args = getopt.getopt(argv, 'L:s:o:')
+        opts, args = getopt.getopt(argv, 'fL:s:o:')
         Options = dict(opts)
 
         if '-L' in Options.keys():
@@ -237,6 +293,8 @@ if __name__ == "__main__":
             CSVfile = Options['-s']
         if '-o' in Options.keys():
             OutputFile = Options['-o']
+        if '-f' in Options.keys():
+            UseFirebase = True
     except getopt.GetoptError:
         print('Invalid command line option or arguments')
         sys.exit(2)
@@ -245,6 +303,9 @@ if __name__ == "__main__":
         make_csv_chart(CSVfile)
     elif StockListFile:
         slist = getstocklist(StockListFile)
-        make_stock_charts(slist)
+        if UseFirebase:
+            make_firebase_charts(slist)
+        else:
+            make_stock_charts(slist)
     else:
         print("nothing to do")
