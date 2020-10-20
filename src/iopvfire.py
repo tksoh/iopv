@@ -2,7 +2,7 @@ import time
 import pprint
 import getopt
 import sys
-from iopv import IOPV
+from iopv import IopvParser
 from fireworks import Firework
 from utils import getstocklist
 from pprint import pprint
@@ -15,16 +15,16 @@ HtmlFile = None
 
 def iopv_update():
     if HtmlFile:
-        iopv_loader = IOPV(HtmlFile)
+        parser = IopvParser(HtmlFile)
     else:
-        iopv_loader = IOPV()
+        parser = IopvParser()
 
     # pprint(iopv_loader.iopv_data)
     fire = Firework()
     now = datetime.now()
     date = now.date()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
-    for stock, iopv in iopv_loader.iopv_data.items():
+    for stock, iopv in parser.iopv_data.items():
         if iopv == '-':
             continue
         if StockList and stock not in StockList:

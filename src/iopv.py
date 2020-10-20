@@ -40,7 +40,7 @@ def parse_html(html):
     return iopvinfo
 
 
-class IOPV:
+class IopvParser:
     def __init__(self, source=Url):
         self.source = source
         self.max_retry = MaxRetry
@@ -98,8 +98,8 @@ if __name__ == "__main__":
         sys.exit(2)
 
     if HtmlFile:
-        iopv1 = IOPV(HtmlFile)
+        iopv1 = IopvParser(HtmlFile)
     else:
-        iopv1 = IOPV(Url)
+        iopv1 = IopvParser(Url)
 
     pprint(iopv1.iopv_data)
