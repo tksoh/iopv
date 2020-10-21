@@ -273,7 +273,8 @@ def make_chart(df, stock):
             f'<b>CLOSE:</b>{cls:.3f} {chg:+.3f} ({chg_pct:+.2f}%)  ' \
             f'<b>Date:</b>{dt}' \
             f'</span>'
-    fig.update_layout(title_text=title, title_font_size=30, hovermode='x')
+    fig.update_layout(title_text=title, title_font_size=30, hovermode='x',
+                      xaxis_rangeslider_visible=False)
     return fig
 
 if __name__ == "__main__":
