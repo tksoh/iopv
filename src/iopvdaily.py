@@ -35,6 +35,7 @@ def getdaily(tgtdate, records):
             tdata.append(time)
 
     tdata.sort()
+    tdata.pop(0)     # scrap the closing price of previous day
     dopen = tprices[tdata[0]]
     close = tprices[tdata[-1]]
 
