@@ -248,8 +248,8 @@ def make_csv_chart(filename):
 
 def make_chart(df, stock):
     # generate stock indicators
-    msize = 60
-    mov = make_moving_average(df, window=msize)
+    mov60 = make_moving_average(df, window=60)
+    mov20 = make_moving_average(df, window=20)
     kv, dv = generate_kdj(df)
     cls, chg, chg_pct = get_change(df)
 
@@ -260,8 +260,12 @@ def make_chart(df, stock):
                        low=df['LOW'], close=df['CLOSE'], name="Candle")
     )
     fig.add_trace(
-        go.Scatter(x=df.DATE, y=mov, mode='lines', name=f"MA{msize}",
+        go.Scatter(x=df.DATE, y=mov60, mode='lines', name=f"MA60",
                    line={'color': "green"}),
+    )
+    fig.add_trace(
+        go.Scatter(x=df.DATE, y=mov20, mode='lines', name=f"MA20",
+                   line={'color': "yellow"}),
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=kv, name="K9",
