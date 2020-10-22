@@ -35,13 +35,17 @@ def getdaily(tgtdate, records):
             tdata.append(time)
 
     tdata.sort()
-    tdata.pop(0)     # scrap the closing price of previous day
+
+    # scrap the closing price of previous day
+    t = tdata.pop(0)
+    del tprices[t]
+
+    # extra OHLC info
     dopen = tprices[tdata[0]]
     close = tprices[tdata[-1]]
 
     prices = [*tprices.values()]
     prices.sort()
-
     high = prices[-1]
     low = prices[0]
 
