@@ -159,6 +159,16 @@ def get_missing_dates(df):
     return missing
 
 
+def html_title():
+    dt = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    title = f'<div style="margin-left: 5em;">' \
+            f'<title>Bursa ETF IOPV</title>' \
+            f'<h2>Bursa ETF IOPV</h2>' \
+            f'<h><i>{dt}</i></h>' \
+            f'</div>\n\n'
+    return title
+
+
 def make_stock_charts(stocklist):
     assert slist
 
@@ -182,6 +192,7 @@ def make_stock_charts(stocklist):
         pass
 
     with open(OutputFile, 'a') as f:
+        f.write(html_title())
         table = plot_table(data_list)
         f.write(table)
         for fig in figs:
@@ -219,6 +230,7 @@ def make_firebase_charts(stocklist):
         pass
 
     with open(OutputFile, 'a') as f:
+        f.write(html_title())
         table = plot_table(data_list)
         f.write(table)
         for fig in figs:
@@ -243,6 +255,7 @@ def make_csv_chart(filename):
     except FileNotFoundError:
         pass
     with open(outfile, 'a') as f:
+        f.write(html_title())
         f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 
 
