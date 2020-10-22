@@ -164,9 +164,12 @@ def make_stock_charts(stocklist):
 
     dailydb = GspreadDB(DailyDbName, JsonFile)
     figs = []
+    data_list = []
     for stock in stocklist:
         df = load_gspread_stock(dailydb, stock).sort_values('DATE')
-        figs.append(make_chart(df, stock))
+        fig, data = make_chart(df, stock)
+        figs.append(fig)
+        data_list.append(data)
 
     backup = f'{OutputFile}.org'
     try:
@@ -179,6 +182,8 @@ def make_stock_charts(stocklist):
         pass
 
     with open(OutputFile, 'a') as f:
+        table = plot_table(data_list)
+        f.write(table)
         for fig in figs:
             f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 
@@ -196,9 +201,12 @@ def make_firebase_charts(stocklist):
     db = firebase.database()
 
     figs = []
+    data_list = []
     for stock in stocklist:
         df = load_firebase_stock(db, dbase_id, stock).sort_values('DATE')
-        figs.append(make_chart(df, stock))
+        fig, data = make_chart(df, stock)
+        figs.append(fig)
+        data_list.append(data)
 
     backup = f'{OutputFile}.org'
     try:
@@ -211,6 +219,8 @@ def make_firebase_charts(stocklist):
         pass
 
     with open(OutputFile, 'a') as f:
+        table = plot_table(data_list)
+        f.write(table)
         for fig in figs:
             f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 
@@ -219,7 +229,7 @@ def make_csv_chart(filename):
     df = pd.read_csv(filename)
     df['DATE'] = pd.to_datetime(df.DATE, format='%d/%m/%Y')
     df = df.sort_values('DATE')
-    fig = make_chart(df, filename)
+    fig, _ = make_chart(df, filename)
 
     # make backup and write chart to html file
     outfile = 'sample.html'
@@ -275,7 +285,61 @@ def make_chart(df, stock):
             f'</span>'
     fig.update_layout(title_text=title, title_font_size=30, hovermode='x',
                       xaxis_rangeslider_visible=False)
-    return fig
+    chart_data = {
+        'CHART': fig,
+        'STOCK': stock,
+        'K9': kv[-1],
+        'D9': dv[-1],
+        'CLOSE': cls,
+        'CHANGE': chg,
+        'CHANGE%': chg_pct,
+    }
+    return fig, chart_data
+
+
+def plot_table(data_list):
+    stocks = [x['STOCK'] for x in data_list]
+    k9 = [f"{x['K9']:.2f}" for x in data_list]
+    d9 = [f"{x['D9']:.2f}" for x in data_list]
+    closes = [f"{x['CLOSE']:.3f}" for x in data_list]
+    change = [f"{x['CHANGE']:+.3f}" for x in data_list]
+    change_pct = [f"{x['CHANGE%']:+.2f}" for x in data_list]
+
+    fig = go.Figure(data=[go.Table(
+        columnwidth=[300, 80, 80, 80, 80, 80],
+        header=dict(values=['STOCK', 'K9', 'D9', 'CLOSE', 'CHANGE', 'CHANGE%'],
+                    line_color='darkslategray',
+                    fill_color='lightskyblue',
+                    align='left'),
+        cells=dict(values=[stocks, k9, d9, closes, change, change_pct],
+                   line_color='darkslategray',
+                   fill_color='white',
+                   align='left'))
+    ])
+
+    fig.update_layout(height=400)
+    return fig.to_html(full_html=False, include_plotlyjs='cdn')
+
+
+def make_table(data_list):
+    from prettytable import PrettyTable
+    table = PrettyTable()
+    table.format = True
+    fields = ['STOCK', 'K9', 'D9', 'CLOSE', 'CHANGE', 'CHANGE%']
+    table.field_names = fields
+    for x in data_list:
+        dlist = [
+            x['STOCK'],
+            f"{x['K9']:.2f}",
+            f"{x['D9']:.2f}",
+            f"{x['CLOSE']:.3f}",
+            f"{x['CHANGE']:+.3f}",
+            f"{x['CHANGE']:+.3f}"
+        ]
+        table.add_row(dlist)
+
+    return table.get_html_string()
+
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
