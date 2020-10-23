@@ -315,6 +315,9 @@ def make_chart(df, stock):
 
 
 def plot_table(data_list):
+    from plotly.colors import n_colors
+    color_scales = n_colors('rgb(0, 255, 0)', 'rgb(255, 0, 0)', 100, colortype='rgb')
+
     stocks = [x['STOCK'] for x in data_list]
     k9 = [f"{x['K9']:.2f}" for x in data_list]
     d9 = [f"{x['D9']:.2f}" for x in data_list]
@@ -322,15 +325,27 @@ def plot_table(data_list):
     change = [f"{x['CHANGE']:+.3f}" for x in data_list]
     change_pct = [f"{x['CHANGE%']:+.2f}" for x in data_list]
 
+    # setup cell colors
+    headers = ['STOCK', 'K9', 'D9', 'CLOSE', 'CHANGE', 'CHANGE%']
+    row_num = len(stocks)
+    col_num = len(headers)
+    odd_even_colors = ('white', 'beige')
+    row_colors = [odd_even_colors[x % 2] for x in range(row_num)]
+
+    blacks = ['black'] * row_num
+    k9_colors = [color_scales[int(float(k))] for k in k9]
+    cell_colors = [blacks, k9_colors, blacks, blacks, blacks, blacks]
+
     fig = go.Figure(data=[go.Table(
         columnwidth=[300, 80, 80, 80, 80, 80],
-        header=dict(values=['STOCK', 'K9', 'D9', 'CLOSE', 'CHANGE', 'CHANGE%'],
+        header=dict(values=headers,
                     line_color='darkslategray',
                     fill_color='lightskyblue',
                     align='left'),
         cells=dict(values=[stocks, k9, d9, closes, change, change_pct],
                    line_color='darkslategray',
-                   fill_color='white',
+                   fill_color=[row_colors * col_num],
+                   font=dict(color=cell_colors),
                    align='left'))
     ])
 
