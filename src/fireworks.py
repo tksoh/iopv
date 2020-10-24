@@ -36,12 +36,18 @@ class Firework:
 
     def get_stock_daily(self, stock, last=100):
         db = self.firebase.database()
-        data = db.child(daily_db).child(stock).order_by_child('DATE').limit_to_last(last).get()
+        if last<0:
+            data = db.child(daily_db).child(stock).get()
+        else:
+            data = db.child(daily_db).child(stock).order_by_child('DATE').limit_to_last(last).get()
         return data
 
     def get_stock_raw(self, stock, last=100):
         db = self.firebase.database()
-        data = db.child(raw_db).child(stock).order_by_child('DATE').limit_to_last(last).get()
+        if last<0:
+            data = db.child(raw_db).child(stock).get()
+        else:
+            data = db.child(raw_db).child(stock).order_by_child('DATE').limit_to_last(last).get()
         return data
 
     def update_stock_daily(self, stock, iopv, iopv_date, create=True):
