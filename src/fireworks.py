@@ -67,7 +67,8 @@ class Firework:
             data['LOW'] = iopv if iopv < data['LOW'] else data['LOW']
             data['CLOSE'] = iopv
             db.child(daily_db).child(stock).child(last_key).update(data)
-        else:
+        elif last_data['CLOSE'] != iopv:
+            # only create data for new days if iopv changes since previous close
             data = {'DATE': date,
                     'OPEN': iopv,
                     'HIGH': iopv,
