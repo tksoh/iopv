@@ -32,7 +32,7 @@ def iopv_update():
 
         print(f"[{timestamp}] updating '{stock}', {iopv}")
         ticker = fire.get_stock_ticker(stock)
-        fire.update_stock_raw(ticker, {'DATE': timestamp, 'IOPV': iopv})
+        fire.update_stock_raw(ticker, iopv, timestamp)
         fire.update_stock_daily(ticker, iopv, date)
 
 

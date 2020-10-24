@@ -82,9 +82,10 @@ class Firework:
                     'CLOSE': iopv}
             db.child(daily_db).child(stock).push(data)
 
-    def update_stock_raw(self, stock, data, create=True):
-        latest = self.get_stock_raw(stock, last=2)
+    def update_stock_raw(self, stock, iopv, date, create=True):
+        data = {'DATE': date, 'IOPV': iopv}
 
+        latest = self.get_stock_raw(stock, last=2)
         db = self.firebase.database()
         if not latest.each() and create:
             # add new row
