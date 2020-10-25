@@ -100,8 +100,8 @@ def initstock(args):
     nowtime = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
     # connect to google sheets
-    dailydb = GspreadDB(DailyDbName, JsonFile)
-    stockdb = GspreadDB(SourceDbName, JsonFile)
+    dailydb = GspreadDB(DailyDbName, 'DAILY', JsonFile)
+    stockdb = GspreadDB(SourceDbName, 'IOPV', JsonFile)
 
     for stock in args:
         dlog("Initializing %s" % stock)
@@ -112,7 +112,7 @@ def initstock(args):
             dailydb.log(nowtime, ve)
             sys.exit(1)
 
-        dailysheet = dailydb.initsheet(stock, ['DATE','OPEN','HIGH','LOW','CLOSE','REMARK'])
+        dailysheet = dailydb.initsheet(stock)
         trecs = tickersheet.get_all_records()
         dates = sorted(getdates(trecs),
                 key=lambda x: datetime.strptime(x, "%d/%m/%Y").strftime("%Y-%m-%d"),

@@ -95,7 +95,7 @@ def runmain(args):
             print('\t'.join([nowtime] + stock))
     elif SaveToDBase:
         from gspreaddb import GspreadDB
-        db = GspreadDB(WorkbookName, JsonFile)
+        db = GspreadDB(WorkbookName, 'IOPV', JsonFile)
 
         try:
             iopvinfo = getstocklive()

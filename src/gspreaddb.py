@@ -3,13 +3,16 @@ from oauth2client.service_account import ServiceAccountCredentials
 from gspread.exceptions import WorksheetNotFound
 
 
-class GspreadDB:    
-    def __init__(self, wbname='iopvdb', json='iopv.json'):
+class GspreadDB:
+    def __init__(self, wbname, dbtype, json='iopv.json'):
+        assert dbtype in ['DAILY', 'IOPV']
+
         # connect to google spreadsheet
         scope = ['https://spreadsheets.google.com/feeds',
                  'https://www.googleapis.com/auth/drive']
         creds = ServiceAccountCredentials.from_json_keyfile_name(json, scope)
         client = gspread.authorize(creds)
+        self.dbtype = dbtype
         self.workbook = client.open(wbname)
         self.logsheet = self.workbook.worksheet('LOG')
         self.stocklist = self.workbook.worksheet('Stock List').get_all_records()
@@ -75,11 +78,17 @@ class GspreadDB:
         sheet = self.getstocksheet(stockname)
         return sheet.row_values(1)
 
-    def initsheet(self, stockname, headers):
+    def initsheet(self, stockname):
+        if self.dbtype == 'DAILY':
+            headers = ['DATE','OPEN','HIGH','LOW','CLOSE','REMARK']
+        else:
+            headers = ['TIME', 'IOPV']
+
         try:
             sheet = self.getstocksheet(stockname)
             sheet.clear()
         except ValueError as ve:
+            shname = self.getstockticker(stockname)
             sheet = self.workbook.add_worksheet(title=shname, rows="100", cols="20")
 
         sheet.update('A1', [headers], value_input_option='USER_ENTERED')
@@ -126,7 +135,7 @@ if __name__ == "__main__":
     if writetodb:
         now = datetime.now()
         nowtime = now.strftime("%d/%m/%Y %H:%M:%S")
-        
+
         # write to a valid sample stock sheet for testing
         db.addchange("TESTING", nowtime, 1.235)
 
