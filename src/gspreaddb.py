@@ -1,5 +1,7 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from gspread.exceptions import WorksheetNotFound
+
 
 class GspreadDB:    
     def __init__(self, wbname='iopvdb', json='iopv.json'):
@@ -31,7 +33,7 @@ class GspreadDB:
             sh = self.workbook.worksheet(ticker)
             self.stocksheet[stockname] = sh
             return sh
-        except:
+        except WorksheetNotFound:
             raise ValueError("Undefined stock '%s'" % stockname)
 
     def append(self, stockname, time, iopv):
