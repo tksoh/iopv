@@ -108,7 +108,7 @@ def runmain(args):
                 name, iopv = stock
                 db.addchange(name, nowtime, iopv)
             except ValueError as ve:
-                db.log(nowtime, ve)
+                db.log(nowtime, f'ERROR updating {name}: {ve}')
 
         db.log(nowtime, "stock update completed.")
     else:
