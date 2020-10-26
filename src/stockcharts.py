@@ -287,7 +287,8 @@ def make_chart(df, stock):
     # plot stock chart with embedded indicators
     fig = make_subplots(rows=2, cols=1,
                         row_heights=[0.9, 0.1],
-                        vertical_spacing=0.06,
+                        vertical_spacing=0.02,
+                        shared_xaxes=True,
                         specs=[[{"secondary_y": True}], [{"secondary_y": True}]])
     fig.add_trace(
         go.Candlestick(x=df['DATE'], open=df['OPEN'], high=df['HIGH'],
