@@ -285,36 +285,46 @@ def make_chart(df, stock):
     changes, change_pcts = make_changes(df)
 
     # plot stock chart with embedded indicators
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig = make_subplots(rows=2, cols=1,
+                        row_heights=[0.9, 0.1],
+                        vertical_spacing=0.06,
+                        specs=[[{"secondary_y": True}], [{"secondary_y": True}]])
     fig.add_trace(
         go.Candlestick(x=df['DATE'], open=df['OPEN'], high=df['HIGH'],
-                       low=df['LOW'], close=df['CLOSE'], name="Candle")
+                       low=df['LOW'], close=df['CLOSE'], name="Candle"),
+        row=1, col=1
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=mov60, mode='lines', name=f"MA60",
                    line={'color': "green"}),
+        row=1, col=1
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=mov20, mode='lines', name=f"MA20",
                    line={'color': "yellow"}),
+        row=1, col=1
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=kv, name="K9",
-                   line={'color': "blue"}), secondary_y=True
+                   line={'color': "blue"}), secondary_y=True,
+        row=1, col=1
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=dv, name="D9",
-                   line={'color': "orange"}), secondary_y=True
+                   line={'color': "orange"}), secondary_y=True,
+        row=1, col=1
     )
 
     colors = ['#2ca02c' if float(x) >= 0 else 'indianred' for x in change_pcts]
     fig.add_trace(
         go.Bar(x=df.DATE, y=changes, name="CHANGE",
-               marker_color=colors), secondary_y=True
+               marker_color=colors), secondary_y=False,
+        row=2, col=1
     )
     fig.add_trace(
         go.Bar(x=df.DATE, y=change_pcts, name="CHANGE%",
-               marker_color=colors), secondary_y=True
+               marker_color=colors), secondary_y=False,
+        row=2, col=1
     )
 
     # generate chart html
