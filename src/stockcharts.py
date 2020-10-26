@@ -172,7 +172,7 @@ def html_title():
 def make_stock_charts(stocklist):
     assert slist
 
-    dailydb = GspreadDB(DailyDbName, JsonFile)
+    dailydb = GspreadDB(DailyDbName, 'DAILY', JsonFile)
     figs = []
     data_list = []
     for stock in stocklist:
