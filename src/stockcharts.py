@@ -146,6 +146,23 @@ def get_change(df):
     return close1, change, pct
 
 
+def make_changes(df):
+    df_asc = df.sort_values(by='DATE', ascending=True)
+    closes = list(df_asc.CLOSE)
+
+    changes = [0]
+    change_pcts = [0]
+    for i in range(len(closes)-1):
+        close1 = closes[i+1]
+        close0 = closes[i]
+        change = close1 - close0
+        pct = (close1/close0 - 1) * 100
+        changes.append(f'{change:+.3f}')
+        change_pcts.append(f'{pct:+.2f}')
+
+    return changes, change_pcts
+
+
 def get_missing_dates(df):
     # build complete timepline from start date to end date
     start_date, end_date = sorted([df['DATE'].iloc[0], df['DATE'].iloc[-1]])
@@ -265,6 +282,7 @@ def make_chart(df, stock):
     mov20 = make_moving_average(df, window=20)
     kv, dv = generate_kdj(df)
     cls, chg, chg_pct = get_change(df)
+    changes, change_pcts = make_changes(df)
 
     # plot stock chart with embedded indicators
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -289,6 +307,16 @@ def make_chart(df, stock):
                    line={'color': "orange"}), secondary_y=True
     )
 
+    colors = ['#2ca02c' if float(x) >= 0 else 'indianred' for x in change_pcts]
+    fig.add_trace(
+        go.Bar(x=df.DATE, y=changes, name="CHANGE",
+               marker_color=colors), secondary_y=True
+    )
+    fig.add_trace(
+        go.Bar(x=df.DATE, y=change_pcts, name="CHANGE%",
+               marker_color=colors), secondary_y=True
+    )
+
     # generate chart html
     # hide dates with no values
     missing_dates = get_missing_dates(df)
@@ -300,7 +328,7 @@ def make_chart(df, stock):
             f'<b>CLOSE:</b>{cls:.3f} {chg:+.3f} ({chg_pct:+.2f}%)  ' \
             f'<b>Date:</b>{dt}' \
             f'</span>'
-    fig.update_layout(title_text=title, title_font_size=30, hovermode='x',
+    fig.update_layout(title_text=title, title_font_size=30, hovermode='x', barmode='stack',
                       xaxis_rangeslider_visible=False)
     chart_data = {
         'CHART': fig,
