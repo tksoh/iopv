@@ -316,15 +316,16 @@ def make_chart(df, stock):
         row=1, col=1
     )
 
-    colors = ['#2ca02c' if float(x) >= 0 else 'indianred' for x in change_pcts]
+    chg_colors = ['#45ad57' if float(x) >= 0 else '#ff9166' for x in changes]
+    pct_colors = ['#2ca02c' if float(x) >= 0 else '#ad5a45' for x in change_pcts]
     fig.add_trace(
         go.Bar(x=df.DATE, y=changes, name="CHANGE",
-               marker_color=colors), secondary_y=False,
+               marker_color=chg_colors), secondary_y=False,
         row=2, col=1
     )
     fig.add_trace(
         go.Bar(x=df.DATE, y=change_pcts, name="CHANGE%",
-               marker_color=colors), secondary_y=False,
+               marker_color=pct_colors), secondary_y=False,
         row=2, col=1
     )
 
