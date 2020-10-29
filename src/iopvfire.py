@@ -19,21 +19,8 @@ def iopv_update():
     else:
         parser = IopvParser()
 
-    # pprint(iopv_loader.iopv_data)
     fire = Firework()
-    now = datetime.now()
-    date = now.date()
-    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
-    for stock, iopv in parser.iopv_data.items():
-        if iopv == '-':
-            continue
-        if StockList and stock not in StockList:
-            continue
-
-        print(f"[{timestamp}] updating '{stock}', {iopv}")
-        ticker = fire.get_stock_ticker(stock)
-        fire.update_stock_raw(ticker, iopv, timestamp)
-        fire.update_stock_daily(ticker, iopv, date)
+    fire.update_iopv_list(parser.iopv_data.items())
 
 
 if __name__ == "__main__":

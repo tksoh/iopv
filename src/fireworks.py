@@ -6,6 +6,8 @@ import pyrebase
 from pprint import pprint
 from datetime import datetime
 from pandas import to_datetime
+import pandas as pd
+
 
 firebase_config_file = 'firebase_config.json'
 daily_db = 'iopv-daily'
@@ -50,66 +52,67 @@ class Firework:
             data = db.child(raw_db).child(stock).order_by_child('DATE').limit_to_last(last).get()
         return data
 
-    def update_stock_daily(self, stock, iopv, iopv_date, create=True):
-        rec = self.get_stock_daily(stock, 1)
-        date = str(to_datetime(iopv_date, format='%Y-%m-%d %H:%M:%S').date())
+    def update_stock_raw(self, date, data):
         db = self.firebase.database()
-        if not rec.each() and create:
-            data = {'DATE': date,
-                    'OPEN': iopv,
-                    'HIGH': iopv,
-                    'LOW': iopv,
-                    'CLOSE': iopv}
-            db.child(daily_db).child(stock).push(data)
-            return
+        db.child(raw_db).child(date).update(data)
 
-        last = rec.each()[0]
-        last_data = last.val()
-        last_key = last.key()
+    def update_stock_daily(self, date, data):
         db = self.firebase.database()
-        if last_data['DATE'] == date:
-            data = last_data.copy()
-            data['HIGH'] = iopv if iopv > data['HIGH'] else data['HIGH']
-            data['LOW'] = iopv if iopv < data['LOW'] else data['LOW']
-            data['CLOSE'] = iopv
-            db.child(daily_db).child(stock).child(last_key).update(data)
-        elif last_data['CLOSE'] != iopv:
-            # only create data for new days if iopv changes since previous close
-            data = {'DATE': date,
-                    'OPEN': iopv,
-                    'HIGH': iopv,
-                    'LOW': iopv,
-                    'CLOSE': iopv}
-            db.child(daily_db).child(stock).push(data)
+        db.child(daily_db).child(date).update(data)
 
-    def update_stock_raw(self, stock, iopv, date, create=True):
-        data = {'DATE': date, 'IOPV': iopv}
-
-        latest = self.get_stock_raw(stock, last=2)
+    def update_iopv_list(self, iopv_list):
+        # download all data
         db = self.firebase.database()
-        if not latest.each() and create:
-            # add new row
-            db.child(raw_db).child(stock).push(data)
-            return
+        raw = db.child(raw_db).get()
+        raw_data = raw.val()
+        if not raw_data:
+            raw_data = {}
+        daily = db.child(daily_db).get()
+        daily_data = daily.val()
+        if not daily_data:
+            daily_data = {}
 
-        rows = latest.each()
-        last_n1 = rows.pop()
-        iopv_n1 = last_n1.val()['IOPV']
-        try:
-            last_n2 = rows.pop()
-            iopv_n2 = last_n2.val()['IOPV']
-        except IndexError:
-            iopv_n2 = ''
+        # build dates
+        now = datetime.now()
+        date = str(now.date())
+        timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
-        if data['IOPV'] != iopv_n1:
-            # add new row
-            db.child(raw_db).child(stock).push(data)
-        elif iopv_n1 != iopv_n2:
-            # add new row
-            db.child(raw_db).child(stock).push(data)
-        else:
-            # update latest row in dbase
-            db.child(raw_db).child(stock).child(last_n1.key()).set(data)
+        # update IOPV raw database
+        iopv_dict = {}
+        for stock, iopv in iopv_list:
+            ticker = self.get_stock_ticker(stock)
+            iopv_dict[ticker] = iopv
+        fire_data = {"DATE": timestamp, "IOPV": iopv_dict}
+        db.child(raw_db).child(timestamp).update(fire_data)
+
+        # update IOPV daily database
+        stock_iopv = {}
+        for dt, iset in raw_data.items():
+            if date not in dt:
+                continue
+            for stk, iopv in iset['IOPV'].items():
+                if stk not in stock_iopv:
+                    stock_iopv[stk] = []
+                stock_iopv[stk].append({'DATE': dt, 'IOPV': iopv})
+
+        def get_ohlc(ilist):
+            df = pd.DataFrame(ilist)
+            dfs = df.sort_values(by='DATE', ascending=True)
+            op = dfs.iloc[1]['IOPV'] if len(dfs) > 1 else dfs.iloc[0]['IOPV']
+            cl = dfs.iloc[-1]['IOPV']
+            hi = dfs['IOPV'].max()
+            lo = dfs['IOPV'].min()
+            return op, hi, lo, cl
+
+        daily_dict = {}
+        for stk, ilist in stock_iopv.items():
+            ilist.append({'DATE': timestamp, 'IOPV': iopv_dict[stk]})
+            op, hi, lo, cl = get_ohlc(ilist)
+            ohlc = {'OPEN': op, 'HIGH': hi, 'LOW':lo, 'CLOSE':cl}
+            daily_dict[stk] = ohlc
+
+        fire_data = {"DATE": date, "IOPV": daily_dict}
+        db.child(daily_db).child(date).update(fire_data)
 
     def import_json(self, db_path, filename):
         with open(filename) as f:
