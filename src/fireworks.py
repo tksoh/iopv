@@ -13,6 +13,28 @@ firebase_config_file = 'firebase_config.json'
 daily_db = 'iopv-daily'
 raw_db = 'iopv-raw'
 
+
+def trim_leading_iopv(df):
+    for i in range(len(df) - 1):
+        iopv1 = df.iloc[i]['IOPV']
+        iopv2 = df.iloc[i + 1]['IOPV']
+        if iopv1 != iopv2:
+            return df[i + 1:]
+    else:
+        return df
+
+
+def get_ohlc(ilist):
+    df = pd.DataFrame(ilist)
+    dfs = df.sort_values(by='DATE', ascending=True)
+    dft = trim_leading_iopv(dfs)
+    op = dft.iloc[0]['IOPV']
+    cl = dft.iloc[-1]['IOPV']
+    hi = dft['IOPV'].max()
+    lo = dft['IOPV'].min()
+    return op, hi, lo, cl
+
+
 class Firework:
     def __init__(self, config_file=firebase_config_file):
         self.config_file = config_file
@@ -107,10 +129,6 @@ class Firework:
         raw_data = raw.val()
         if not raw_data:
             raw_data = {}
-        daily = db.child(daily_db).get()
-        daily_data = daily.val()
-        if not daily_data:
-            daily_data = {}
 
         # build dates
         now = datetime.now()
@@ -126,6 +144,7 @@ class Firework:
         db.child(raw_db).child(timestamp).update(fire_data)
 
         # update IOPV daily database
+        raw_data[timestamp] = fire_data     # add new data to pool
         stock_iopv = {}
         for dt, iset in raw_data.items():
             if date not in dt:
@@ -135,20 +154,11 @@ class Firework:
                     stock_iopv[stk] = []
                 stock_iopv[stk].append({'DATE': dt, 'IOPV': iopv})
 
-        def get_ohlc(ilist):
-            df = pd.DataFrame(ilist)
-            dfs = df.sort_values(by='DATE', ascending=True)
-            op = dfs.iloc[1]['IOPV'] if len(dfs) > 1 else dfs.iloc[0]['IOPV']
-            cl = dfs.iloc[-1]['IOPV']
-            hi = dfs['IOPV'].max()
-            lo = dfs['IOPV'].min()
-            return op, hi, lo, cl
-
         daily_dict = {}
         for stk, ilist in stock_iopv.items():
             ilist.append({'DATE': timestamp, 'IOPV': iopv_dict[stk]})
             op, hi, lo, cl = get_ohlc(ilist)
-            ohlc = {'OPEN': op, 'HIGH': hi, 'LOW':lo, 'CLOSE':cl}
+            ohlc = {'OPEN': op, 'HIGH': hi, 'LOW': lo, 'CLOSE': cl}
             daily_dict[stk] = ohlc
 
         fire_data = {"DATE": date, "IOPV": daily_dict}
