@@ -31,10 +31,24 @@ class Firework:
             self.stock_list[data['STOCK']] = data['TICKER']
 
     def get_stock_ticker(self, stock):
-        try:
-            return self.stock_list[stock]
-        except KeyError:
-            return None
+        if stock not in self.stock_list:
+            self.add_stock(stock)
+            self.load_stock_list()
+        return self.stock_list[stock]
+
+    def add_stock(self, stock):
+        # find the next available ETF ticker
+        for i in range(1000):
+            ticker = 'NEWETF-' + str(i + 1)
+            if ticker not in self.stock_list:
+                break
+        else:
+            raise KeyError(f'[ERROR] unable to create a ticker for new ETF: {stock}')
+
+        date = str(datetime.now().date())
+        data = {'STOCK': stock, 'TICKER': ticker, 'COMMENT': f'Auto added on {date}'}
+        db = self.firebase.database()
+        db.child('stock-list').push(data)
 
     def get_stock_daily(self, stock, last=100):
         db = self.firebase.database()
