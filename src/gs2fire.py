@@ -12,7 +12,7 @@ SourceDbName = 'iopvdb2'
 JsonAuthFile = 'iopv.json'
 DebugMode = True
 update_fire = False
-LastDaysRaw = 5
+LastDaysRaw = 7
 
 def main(stocks):
     assert stocks
