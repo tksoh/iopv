@@ -50,21 +50,47 @@ class Firework:
         db = self.firebase.database()
         db.child('stock-list').push(data)
 
-    def get_stock_daily(self, stock, last=100):
+    def get_stock_daily(self, tickers, last=100):
         db = self.firebase.database()
-        if last<0:
-            data = db.child(daily_db).child(stock).get()
+        if last < 0:
+            data = db.child(daily_db).get()
         else:
-            data = db.child(daily_db).child(stock).order_by_child('DATE').limit_to_last(last).get()
-        return data
+            data = db.child(daily_db).order_by_child('DATE').limit_to_last(last).get()
 
-    def get_stock_raw(self, stock, last=100):
+        stock_data = {}
+        rows = data.val()
+        for row in rows.values():
+            date = row['DATE']
+            iset = row['IOPV']
+            for ticker, iopv in iset.items():
+                if tickers and ticker not in tickers:
+                    continue
+                if ticker not in stock_data:
+                    stock_data[ticker] = []
+                stock_data[ticker].append({'DATE': date, 'IOPV': iopv})
+
+        return stock_data
+
+    def get_stock_raw(self, tickers, last=100):
         db = self.firebase.database()
-        if last<0:
-            data = db.child(raw_db).child(stock).get()
+        if last < 0:
+            data = db.child(raw_db).get()
         else:
-            data = db.child(raw_db).child(stock).order_by_child('DATE').limit_to_last(last).get()
-        return data
+            data = db.child(raw_db).order_by_child('DATE').limit_to_last(last).get()
+
+        stock_data = {}
+        rows = data.val()
+        for row in rows.values():
+            date = row['DATE']
+            iset = row['IOPV']
+            for ticker, iopv in iset.items():
+                if tickers and ticker not in tickers:
+                    continue
+                if ticker not in stock_data:
+                    stock_data[ticker] = []
+                stock_data[ticker].append({'DATE': date, 'IOPV': iopv})
+
+        return stock_data
 
     def update_stock_raw(self, date, data):
         db = self.firebase.database()
@@ -196,11 +222,7 @@ if __name__ == "__main__":
         sys.exit(2)
 
     fire = Firework()
-    price = fire.get_stock_daily('0829EA', last=1)
-    pprint(price.val())
-    price = fire.get_stock_raw('0829EA', last=2)
-    pprint(price.val())
-    #fire.purge_daily('0829EA', 1)
-    price = fire.get_stock_raw('0829EA', last=1)
-    newdata = price.each()[0].val()
-    pprint(newdata)
+    price = fire.get_stock_daily(['0829EA'], last=3)
+    pprint(price)
+    price = fire.get_stock_raw(['0829EA'], last=3)
+    pprint(price)
