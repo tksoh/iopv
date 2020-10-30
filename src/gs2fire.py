@@ -7,8 +7,8 @@ from gspreaddb import GspreadDB
 from utils import getstocklist
 from pandas import to_datetime
 
-DailyDbName = 'Copy of iopvdb-daily'
-SourceDbName = 'Copy of iopvdb2'
+DailyDbName = 'iopvdb-daily'
+SourceDbName = 'iopvdb2'
 JsonAuthFile = 'iopv.json'
 DebugMode = True
 update_fire = False
