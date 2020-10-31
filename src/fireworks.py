@@ -165,6 +165,7 @@ class Firework:
         db.child(daily_db).child(date).update(fire_data)
 
     def import_json(self, db_path, filename):
+        db = self.firebase.database()
         with open(filename) as f:
             data = json.load(f)
             db.child(db_path).set(data)
