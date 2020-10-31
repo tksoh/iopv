@@ -34,7 +34,11 @@ def parse_html(html):
         if tbname and tbiopv:
             name = tbname.get_text().split('\xa0')[-1]
             val = tbiopv.get_text()
-            iopv = re.sub(f'[^{re.escape(string.printable)}]', '', val)
+            iopv_str = re.sub(f'[^{re.escape(string.printable)}]', '', val)
+            try:
+                iopv = float(iopv_str)
+            except ValueError:
+                iopv = iopv_str
             iopvinfo[name] = iopv
 
     return iopvinfo
