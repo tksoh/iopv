@@ -10,7 +10,7 @@ import pandas as pd
 from gspreaddb import GspreadDB
 from utils import getstocklist
 from datetime import datetime
-
+from fireworks import Firework
 
 DailyDbName = 'iopvdb-daily'
 JsonFile = 'iopv.json'
@@ -220,18 +220,15 @@ def make_stock_charts(stocklist):
 def make_firebase_charts(stocklist):
     assert slist
 
-    with open(firebase_config_file) as f:
-        firebase_config = json.load(f)
-
-    firebase_connect = firebase_config['firebase_connect']
-    dbase_id = firebase_config['firebase_dbase_id']
-    firebase = pyrebase.initialize_app(firebase_connect)
-    db = firebase.database()
-
+    fire = Firework()
+    stock_dict = dict([(x, fire.get_stock_ticker(x)) for x in stocklist])
+    stock_daily = fire.get_stock_daily(stock_dict.values(), last=200)
     figs = []
     data_list = []
     for stock in stocklist:
-        df = load_firebase_stock(db, dbase_id, stock).sort_values('DATE')
+        ticker = stock_dict[stock]
+        stock_data = stock_daily[ticker]
+        df = pd.DataFrame(stock_data).sort_values('DATE')
         fig, data = make_chart(df, stock)
         figs.append(fig)
         data_list.append(data)
