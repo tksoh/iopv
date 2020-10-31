@@ -123,17 +123,17 @@ class Firework:
         db.child(daily_db).child(date).update(data)
 
     def update_iopv_list(self, iopv_list):
-        # download all data
-        db = self.firebase.database()
-        raw = db.child(raw_db).get()
-        raw_data = raw.val()
-        if not raw_data:
-            raw_data = {}
-
         # build dates
         now = datetime.now()
         date = str(now.date())
         timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+
+        # download all data
+        db = self.firebase.database()
+        raw = db.child(raw_db).order_by_child('DATE').start_at(date).get()
+        raw_data = raw.val()
+        if not raw_data:
+            raw_data = {}
 
         # update IOPV raw database
         iopv_dict = {}
