@@ -39,7 +39,7 @@ def main(stocks):
                 date = str(time)
                 if date not in iopv_by_date:
                     iopv_by_date[date] = {'DATE': date, 'IOPV': {}}
-                iopv_by_date[date]['IOPV'][ticker] = str(row['IOPV'])
+                iopv_by_date[date]['IOPV'][ticker] = row['IOPV']
 
             dailysheet = dailydb.getstocksheet(stock)
             rows = dailysheet.get_all_records()
@@ -48,8 +48,7 @@ def main(stocks):
                 date = str(date.date())
                 if date not in daily_by_date:
                     daily_by_date[date] = {'DATE': date, 'IOPV': {}}
-                ohlc = {'OPEN': str(row['OPEN']), 'HIGH': str(row['HIGH']),
-                        'LOW': str(row['LOW']), 'CLOSE': str(row['CLOSE'])}
+                ohlc = dict([(x, row[x]) for x in ('OPEN', 'HIGH', 'LOW', 'CLOSE')])
                 daily_by_date[date]['IOPV'][ticker] = ohlc
         except ValueError as ve:
             print(f"error getting sheet data for '{stock}': {ve}")
