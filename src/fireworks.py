@@ -89,7 +89,7 @@ class Firework:
                     continue
                 if ticker not in stock_data:
                     stock_data[ticker] = []
-                stock_data[ticker].append({'DATE': date, 'IOPV': iopv})
+                stock_data[ticker].append({**iopv, **{'DATE': date}})
 
         return stock_data
 
