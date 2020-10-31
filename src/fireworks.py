@@ -4,7 +4,7 @@ import json
 import csv
 import pyrebase
 from pprint import pprint
-from datetime import datetime
+import datetime
 from pandas import to_datetime
 import pandas as pd
 
@@ -67,7 +67,7 @@ class Firework:
         else:
             raise KeyError(f'[ERROR] unable to create a ticker for new ETF: {stock}')
 
-        date = str(datetime.now().date())
+        date = str(datetime.datetime.now().date())
         data = {'STOCK': stock, 'TICKER': ticker, 'COMMENT': f'Auto added on {date}'}
         db = self.firebase.database()
         db.child('stock-list').push(data)
@@ -124,7 +124,7 @@ class Firework:
 
     def update_iopv_list(self, iopv_list):
         # build dates
-        now = datetime.now()
+        now = datetime.datetime.now()
         date = str(now.date())
         timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -190,19 +190,47 @@ class Firework:
             db = self.firebase.database()
             db.child(db_path).set(data)
 
-    def purge_daily(self, stock, rows):
+    def purge_daily(self, keep_days=300, save_to=None):
+        today =  datetime.date.today()
+        end_date = today - datetime.timedelta(keep_days)
         db = self.firebase.database()
-        data = db.child(daily_db).child(stock).order_by_child('DATE').limit_to_first(rows).get()
-        for rec in data.each():
-            key = rec.key()
-            db.child(raw_db).child(stock).child(key).remove()
+        data = db.child(daily_db).order_by_child('DATE').end_at(str(end_date)).get()
 
-    def purge_raw(self, stock, rows):
-        db = self.firebase.database()
-        data = db.child(raw_db).child(stock).order_by_child('DATE').limit_to_first(rows).get()
+        if not data.each():
+            print(f'no daily data to purse')
+            return
+
+        # backup the data before removing from database
+        if not save_to:
+            save_to = f'iopv-daily-purged-{today}.json'
+        with open(save_to, 'w') as fp:
+            json.dump(data.val(), fp, indent=2)
+        print(f'purged daily data saved to {save_to}')
+
         for rec in data.each():
             key = rec.key()
-            db.child(raw_db).child(stock).child(key).remove()
+            db.child(daily_db).child(key).remove()
+
+    def purge_raw(self, keep_days=7, save_to=None):
+        today =  datetime.date.today()
+        end_date = today - datetime.timedelta(keep_days)
+        db = self.firebase.database()
+        data = db.child(raw_db).order_by_child('DATE').end_at(str(end_date)).get()
+
+        if not data.each():
+            print(f'no raw data to purse')
+            return
+
+        # backup the data before removing from database
+        if not save_to:
+            save_to = f'iopv-raw-purged-{today}.json'
+        with open(save_to, 'w') as fp:
+            json.dump(data.val(), fp, indent=2)
+        print(f'purged raw data saved to {save_to}')
+
+        for rec in data.each():
+            key = rec.key()
+            db.child(raw_db).child(key).remove()
 
     def upload_file(self, path, remote=None):
         if not remote:
@@ -237,3 +265,8 @@ if __name__ == "__main__":
     pprint(price)
     price = fire.get_stock_raw(['0829EA'], last=3)
     pprint(price)
+
+    purge = False
+    if purge:
+        fire.purge_raw(keep_days=3)
+        fire.purge_daily(keep_days=100)
