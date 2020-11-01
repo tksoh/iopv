@@ -194,7 +194,7 @@ class Firework:
             db.child(db_path).set(data)
 
     def purge_daily(self, keep_days=300, save_to=None):
-        today =  datetime.date.today()
+        today = datetime.date.today()
         end_date = today - datetime.timedelta(keep_days)
         db = self.firebase.database()
         data = db.child(daily_db).order_by_child('DATE').end_at(str(end_date)).get()
@@ -215,7 +215,7 @@ class Firework:
             db.child(daily_db).child(key).remove()
 
     def purge_raw(self, keep_days=7, save_to=None):
-        today =  datetime.date.today()
+        today = datetime.date.today()
         end_date = today - datetime.timedelta(keep_days)
         db = self.firebase.database()
         data = db.child(raw_db).order_by_child('DATE').end_at(str(end_date)).get()

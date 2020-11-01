@@ -99,8 +99,8 @@ def generate_kdj(df, window=9):
 
         start = i - window + 1
         end = i + 1
-        ll = lows[start : end]
-        hl = highs[start : end]
+        ll = lows[start: end]
+        hl = highs[start: end]
         ln = min(ll)
         hn = max(hl)
         rsv = (cn - ln) / (hn - ln) * 100
@@ -214,7 +214,6 @@ def make_stock_charts(stocklist):
         f.write(table)
         for fig in figs:
             f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
-
 
 
 def make_firebase_charts(stocklist):
