@@ -122,9 +122,12 @@ class Firework:
         db = self.firebase.database()
         db.child(daily_db).child(date).update(data)
 
-    def update_iopv_list(self, iopv_list):
+    def update_iopv_list(self, iopv_list, logtime=None):
         # build dates
-        now = datetime.datetime.now()
+        if logtime:
+            now = logtime
+        else:
+            now = datetime.datetime.now()
         date = str(now.date())
         timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
