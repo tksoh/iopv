@@ -272,7 +272,7 @@ def make_firebase_charts(stocklist):
     fire = Firework()
     stock_dict = dict([(x, fire.get_stock_ticker(x)) for x in stocklist])
     stock_daily = fire.get_stock_daily(stock_dict.values(), last=200)
-    stock_raw = fire.get_stock_raw(stock_dict.values(), last=100)
+    stock_raw = fire.get_stock_raw(stock_dict.values(), last=120)
     figs = []
     data_list = []
     for stock in stocklist:
