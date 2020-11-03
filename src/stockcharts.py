@@ -272,7 +272,7 @@ def make_firebase_charts(stocklist):
     fire = Firework()
     stock_dict = dict([(x, fire.get_stock_ticker(x)) for x in stocklist])
     stock_daily = fire.get_stock_daily(stock_dict.values(), last=200)
-    stock_raw = fire.get_stock_raw(stock_dict.values(), last=200)
+    stock_raw = fire.get_stock_raw(stock_dict.values(), last=100)
     figs = []
     data_list = []
     for stock in stocklist:
@@ -420,7 +420,7 @@ def make_minute_chart(df, stock):
                    line={'color': "#00f2ce"}, name="IOPV"),
     )
     fig.add_trace(
-        go.Scatter(x=df.DATE, y=kv, name="K9",
+        go.Scatter(x=df.DATE, y=kv, mode='lines', name="K9",
                    line={'color': "blue"}), secondary_y=True,
     )
     fig.add_trace(
