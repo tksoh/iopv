@@ -103,7 +103,10 @@ def generate_kdj(df, window=9):
         hl = highs[start: end]
         ln = min(ll)
         hn = max(hl)
-        rsv = (cn - ln) / (hn - ln) * 100
+        if hn == ln:
+            rsv = 0
+        else:
+            rsv = (cn - ln) / (hn - ln) * 100
         kvn1 = kv[i-1] if kv[i-1] else 50
         dvn1 = dv[i-1] if dv[i-1] else 50
         kvn = kvn1*2/3 + rsv/3
