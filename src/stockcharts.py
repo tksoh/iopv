@@ -176,6 +176,21 @@ def get_missing_dates(df):
     return missing
 
 
+def get_missing_minutes(df):
+    # build complete timepline from start date to end date
+    start_date, end_date = sorted([df['DATE'].iloc[0], df['DATE'].iloc[-1]])
+    sd = pd.to_datetime(start_date).strftime("%Y-%m-%d %H:%M")
+    ed = pd.to_datetime(end_date).strftime("%Y-%m-%d %H:%M")
+    all_dates = pd.date_range(start=sd, end=ed, freq='5T')
+
+    # retrieve the dates that ARE in the original dataset
+    in_dates = [d.strftime("%Y-%m-%d %H:%M") for d in pd.to_datetime(df['DATE'])]
+
+    # define dates with missing values
+    missing = [d for d in all_dates.strftime("%Y-%m-%d %H:%M").tolist() if d not in in_dates]
+    return missing
+
+
 def html_title():
     dt = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     title = f'<div style="margin-left: 5em;">' \
@@ -216,21 +231,61 @@ def make_stock_charts(stocklist):
             f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 
 
+def make_ohlc(raw_iopv):
+    ohlc_list = []
+    last_iopv = None
+    for rec in raw_iopv:
+        date = rec['DATE']
+        iopv = rec['IOPV']
+        op = last_iopv if last_iopv else iopv
+        cl = iopv
+        hi = max(cl, op)
+        lo = min(cl, op)
+        #ohlc = {'DATE': date, 'OPEN': op, 'HIGH': hi, 'LOW': lo, 'CLOSE': cl}
+        ohlc = {'DATE': date, 'OPEN': iopv, 'HIGH': iopv, 'LOW': iopv, 'CLOSE': iopv}
+        ohlc_list.append(ohlc)
+        last_iopv = iopv
+    return ohlc_list
+
+
+def precondition(iopv_list):
+    new_list = []
+    last_iopv = ''
+    for rec in iopv_list:
+        date = rec['DATE']
+        itime = pd.to_datetime(date).strftime("%H:%M")
+        if itime >= '17:00' or itime <= '09:00':
+            continue
+        iopv = rec['IOPV']
+        if iopv != last_iopv:
+            new_list.append(rec)
+        last_iopv = iopv
+    return new_list
+
+
 def make_firebase_charts(stocklist):
     assert slist
 
     fire = Firework()
     stock_dict = dict([(x, fire.get_stock_ticker(x)) for x in stocklist])
     stock_daily = fire.get_stock_daily(stock_dict.values(), last=200)
+    stock_raw = fire.get_stock_raw(stock_dict.values(), last=200)
     figs = []
     data_list = []
     for stock in stocklist:
         ticker = stock_dict[stock]
-        stock_data = stock_daily[ticker]
-        df = pd.DataFrame(stock_data).sort_values('DATE')
-        fig, data = make_chart(df, stock)
+        stock_daily_data = stock_daily[ticker]
+        df = pd.DataFrame(stock_daily_data).sort_values('DATE')
+        fig, data = make_chart(df, f'{stock} [Day]')
         figs.append(fig)
         data_list.append(data)
+
+        stock_raw_data = precondition(stock_raw[ticker])
+        df = pd.DataFrame(make_ohlc(stock_raw_data)).sort_values('DATE')
+        fig, data = make_minute_chart(df, f'{stock} [5-min]')
+        figs.append(fig)
+        data_list.append(data)
+
 
     backup = f'{OutputFile}.org'
     try:
@@ -350,6 +405,52 @@ def make_chart(df, stock):
     return fig, chart_data
 
 
+def make_minute_chart(df, stock):
+    # generate stock indicators
+    kv, dv = generate_kdj(df)
+
+    # plot stock chart with embedded indicators
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.add_trace(
+        go.Scatter(x=df['DATE'], y=df['CLOSE'],
+                   mode='lines+markers', marker_size=5,
+                   line={'color': "#00f2ce"}, name="IOPV"),
+    )
+    fig.add_trace(
+        go.Scatter(x=df.DATE, y=kv, name="K9",
+                   line={'color': "blue"}), secondary_y=True,
+    )
+    fig.add_trace(
+        go.Scatter(x=df.DATE, y=dv, name="D9",
+                   line={'color': "orange"}), secondary_y=True,
+    )
+
+    # generate chart html
+    fig.update_xaxes(rangebreaks=[
+            dict(bounds=["sat", "mon"]),
+            dict(bounds=[17, 9], pattern="hour")]
+    )
+
+    dt = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+    title = f'{stock}<br>'\
+            f'<span style="font-size: 16px;">' \
+            f'<b>K9:</b>{kv[-1]:.2f}  <b>D9:</b>{dv[-1]:.2f}  ' \
+            f'<b>Date:</b>{dt}' \
+            f'</span>'
+    fig.update_layout(title_text=title, title_font_size=30, hovermode='x', barmode='stack',
+                      xaxis_rangeslider_visible=False, height=400)
+    chart_data = {
+        'CHART': fig,
+        'STOCK': stock,
+        'K9': kv[-1],
+        'D9': dv[-1],
+        'CLOSE': 0,
+        'CHANGE': 0,
+        'CHANGE%': 0,
+    }
+    return fig, chart_data
+
+
 def plot_table(data_list):
     from plotly.colors import n_colors
     color_scales = n_colors('rgb(0, 255, 0)', 'rgb(255, 0, 0)', 100, colortype='rgb')
@@ -385,7 +486,7 @@ def plot_table(data_list):
                    align='left'))
     ])
 
-    fig.update_layout(height=400)
+    fig.update_layout(height=500)
     return fig.to_html(full_html=False, include_plotlyjs='cdn')
 
 
