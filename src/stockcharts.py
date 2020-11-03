@@ -413,6 +413,7 @@ def make_minute_chart(df, stock):
     mov5 = make_moving_average(df, window=5)
     mov20 = make_moving_average(df, window=20)
     kv, dv = generate_kdj(df)
+    cls, chg, chg_pct = get_change(df)
 
     # plot stock chart with embedded indicators
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -457,9 +458,9 @@ def make_minute_chart(df, stock):
         'STOCK': stock,
         'K9': kv[-1],
         'D9': dv[-1],
-        'CLOSE': 0,
-        'CHANGE': 0,
-        'CHANGE%': 0,
+        'CLOSE': cls,
+        'CHANGE': chg,
+        'CHANGE%': chg_pct,
     }
     return fig, chart_data
 
