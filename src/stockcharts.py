@@ -410,6 +410,8 @@ def make_chart(df, stock):
 
 def make_minute_chart(df, stock):
     # generate stock indicators
+    mov5 = make_moving_average(df, window=5)
+    mov20 = make_moving_average(df, window=20)
     kv, dv = generate_kdj(df)
 
     # plot stock chart with embedded indicators
@@ -417,14 +419,22 @@ def make_minute_chart(df, stock):
     fig.add_trace(
         go.Scatter(x=df['DATE'], y=df['CLOSE'],
                    mode='lines+markers', marker_size=5,
-                   line={'color': "#00f2ce"}, name="IOPV"),
+                   line={'color': "#2fd479"}, name="IOPV"),
+    )
+    fig.add_trace(
+        go.Scatter(x=df.DATE, y=mov5, mode='lines', name=f"MA5",
+                   line={'color': "#349feb"})
+    )
+    fig.add_trace(
+        go.Scatter(x=df.DATE, y=mov20, mode='lines', name=f"MA20",
+                   line={'color': "yellow"})
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=kv, mode='lines', name="K9",
                    line={'color': "blue"}), secondary_y=True,
     )
     fig.add_trace(
-        go.Scatter(x=df.DATE, y=dv, name="D9",
+        go.Scatter(x=df.DATE, y=dv, mode='lines', name="D9",
                    line={'color': "orange"}), secondary_y=True,
     )
 
