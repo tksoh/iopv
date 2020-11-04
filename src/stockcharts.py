@@ -257,7 +257,7 @@ def precondition(iopv_list):
     for rec in iopv_list:
         date = rec['DATE']
         itime = pd.to_datetime(date).strftime("%H:%M")
-        if itime >= '17:00' or itime <= '09:00':
+        if itime >= '17:00' or itime < '09:00':
             continue
         iopv = rec['IOPV']
         if iopv != last_iopv:
