@@ -251,7 +251,17 @@ def make_ohlc(raw_iopv):
     return ohlc_list
 
 
-def precondition(iopv_list):
+def precond_daily(ohlc_list):
+    new_list = []
+    for rec in ohlc_list:
+        if rec['OPEN'] == rec['HIGH'] == rec['LOW'] == rec['LOW']:
+            # skip days without activities (weekends, holidays, etc)
+            continue
+        new_list.append(rec)
+    return new_list
+
+
+def precond_minutes(iopv_list):
     new_list = []
     last_iopv = ''
     for rec in iopv_list:
@@ -277,13 +287,13 @@ def make_firebase_charts(stocklist):
     data_list = []
     for stock in stocklist:
         ticker = stock_dict[stock]
-        stock_daily_data = stock_daily[ticker]
+        stock_daily_data = precond_daily(stock_daily[ticker])
         df = pd.DataFrame(stock_daily_data).sort_values('DATE')
         fig, data = make_chart(df, f'{stock} [Day]')
         figs.append(fig)
         data_list.append(data)
 
-        stock_raw_data = precondition(stock_raw[ticker])
+        stock_raw_data = precond_minutes(stock_raw[ticker])
         df = pd.DataFrame(make_ohlc(stock_raw_data)).sort_values('DATE')
         fig, data = make_minute_chart(df, f'{stock} [5-min]')
         figs.append(fig)
