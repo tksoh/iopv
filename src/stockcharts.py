@@ -442,7 +442,8 @@ def make_minute_chart(df, stock):
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=kv, mode='lines', name="K9",
-                   line={'color': "blue"}), secondary_y=True,
+                   visible='legendonly', line={'color': "blue"}),
+        secondary_y=True,
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=dv, mode='lines', name="D9",
