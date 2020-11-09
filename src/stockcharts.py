@@ -397,7 +397,7 @@ def make_chart(df, stock):
     # hide dates with no values
     missing_dates = get_missing_dates(df)
     fig.update_xaxes(rangebreaks=[dict(values=missing_dates)])
-    dt = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+    dt = df.DATE.iloc[-1]
     title = f'{stock}<br>'\
             f'<span style="font-size: 16px;">' \
             f'<b>K9:</b>{kv[-1]:.2f}  <b>D9:</b>{dv[-1]:.2f}  ' \
@@ -457,7 +457,7 @@ def make_minute_chart(df, stock):
             dict(bounds=[17, 9], pattern="hour")]
     )
 
-    dt = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+    dt = df.DATE.iloc[-1]
     title = f'{stock}<br>'\
             f'<span style="font-size: 16px;">' \
             f'<b>K9:</b>{kv[-1]:.2f}  <b>D9:</b>{dv[-1]:.2f}  ' \
