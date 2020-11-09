@@ -255,8 +255,8 @@ def precond_daily(ohlc_list):
     new_list = []
     for rec in ohlc_list:
         if rec['OPEN'] == rec['HIGH'] == rec['LOW'] == rec['LOW']:
-            # skip days without activities (weekends, holidays, etc)
-            continue
+            if new_list and new_list[-1]['CLOSE'] == rec['OPEN']:
+                continue
         new_list.append(rec)
     return new_list
 
