@@ -282,7 +282,7 @@ def make_firebase_charts(stocklist):
     fire = Firework()
     stock_dict = dict([(x, fire.get_stock_ticker(x)) for x in stocklist])
     stock_daily = fire.get_stock_daily(stock_dict.values(), last=200)
-    stock_raw = fire.get_stock_raw(stock_dict.values(), last=120)
+    stock_raw = fire.get_stock_raw(stock_dict.values(), last=1200)
     figs = []
     data_list = []
     for stock in stocklist:
@@ -294,7 +294,7 @@ def make_firebase_charts(stocklist):
         data_list.append(data)
 
         stock_raw_data = precond_minutes(stock_raw[ticker])
-        df = pd.DataFrame(make_ohlc(stock_raw_data)).sort_values('DATE')
+        df = pd.DataFrame(make_ohlc(stock_raw_data[-120:])).sort_values('DATE')
         fig, data = make_minute_chart(df, f'{stock} [5-min]')
         figs.append(fig)
         data_list.append(data)
