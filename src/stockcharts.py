@@ -180,18 +180,32 @@ def get_missing_dates(df):
 
 
 def get_missing_minutes(df):
-    # build complete timepline from start date to end date
+    # build complete timeline from start date to end date
+    all_dates = []
     start_date, end_date = sorted([df['DATE'].iloc[0], df['DATE'].iloc[-1]])
     sd = pd.to_datetime(start_date).strftime("%Y-%m-%d %H:%M")
+    ed = pd.to_datetime(start_date).strftime("%Y-%m-%d 17:55")
+    dr = pd.date_range(start=sd, end=ed, freq='5T').strftime("%Y-%m-%d %H:%M").tolist()
+    all_dates += dr
+
+    sd = pd.to_datetime(end_date).strftime("%Y-%m-%d 09:05")
     ed = pd.to_datetime(end_date).strftime("%Y-%m-%d %H:%M")
-    all_dates = pd.date_range(start=sd, end=ed, freq='5T')
+    dr = pd.date_range(start=sd, end=ed, freq='5T').strftime("%Y-%m-%d %H:%M").tolist()
+    all_dates += dr
+
+    unique_days = sorted(list(set([d.strftime("%Y-%m-%d") for d in pd.to_datetime(df['DATE'])])))
+    for d in unique_days[1:-1]:
+        sd = pd.to_datetime(d).strftime("%Y-%m-%d 09:05")
+        ed = pd.to_datetime(d).strftime("%Y-%m-%d 17:55")
+        dr = pd.date_range(start=sd, end=ed, freq='5T').strftime("%Y-%m-%d %H:%M").tolist()
+        all_dates += dr
 
     # retrieve the dates that ARE in the original dataset
     in_dates = [d.strftime("%Y-%m-%d %H:%M") for d in pd.to_datetime(df['DATE'])]
 
     # define dates with missing values
-    missing = [d for d in all_dates.strftime("%Y-%m-%d %H:%M").tolist() if d not in in_dates]
-    return missing
+    missings = [d for d in all_dates if d not in in_dates]
+    return missings
 
 
 def html_title():
@@ -451,10 +465,13 @@ def make_minute_chart(df, stock):
         secondary_y=True
     )
 
-    # generate chart html
+    ### generate chart html ###
+    # remove the gaps between timestamp
+    missings = get_missing_minutes(df)
     fig.update_xaxes(rangebreaks=[
+            dict(dvalue=5*60*1000, values=missings),
             dict(bounds=["sat", "mon"]),
-            dict(bounds=[17, 9], pattern="hour")]
+            dict(bounds=[18, 9], pattern="hour")]
     )
 
     dt = df.DATE.iloc[-1]
