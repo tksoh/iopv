@@ -530,7 +530,7 @@ def plot_table(data_list):
                    align='left'))
     ])
 
-    fig.update_layout(height=500)
+    fig.update_layout(height=200 + len(data_list)*25)
     return fig.to_html(full_html=False, include_plotlyjs='cdn')
 
 
