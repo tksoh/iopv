@@ -362,6 +362,18 @@ def make_chart(df, stock):
     cls, chg, chg_pct = get_change(df)
     changes, change_pcts = make_changes(df)
 
+    # display daily change info on candlestick's hover
+    hovertext = []
+    for i in range(len(df.OPEN)):
+        hovertext.append(
+            # f'Open: {df.OPEN[i]}' +
+            # f'<br>High: {df.HIGH[i]}' +
+            # f'<br>Low: {df.LOW[i]}' +
+            # f'<br>Close: {df.CLOSE[i]}' +
+            f'<br>Daily change: ' +
+            f'<br>   {changes[i]} ({change_pcts[i]}%)'
+        )
+
     # plot stock chart with embedded indicators
     fig = make_subplots(rows=2, cols=1,
                         row_heights=[0.9, 0.1],
@@ -370,7 +382,10 @@ def make_chart(df, stock):
                         specs=[[{"secondary_y": True}], [{"secondary_y": True}]])
     fig.add_trace(
         go.Candlestick(x=df['DATE'], open=df['OPEN'], high=df['HIGH'],
-                       low=df['LOW'], close=df['CLOSE'], name="Candle"),
+                       low=df['LOW'], close=df['CLOSE'], name="Candle",
+                       text=hovertext,
+                       # hoverinfo='text'
+                       ),
         row=1, col=1
     )
     fig.add_trace(
