@@ -429,6 +429,7 @@ def make_chart(df, stock):
     # hide dates with no values
     missing_dates = get_missing_dates(df)
     fig.update_xaxes(rangebreaks=[dict(values=missing_dates)])
+    fig.update_yaxes(fixedrange=True)
     dt = df.DATE.iloc[-1]
     title = f'{stock}<br>'\
             f'<span style="font-size: 16px;">' \
@@ -486,6 +487,7 @@ def make_minute_chart(df, stock):
     ### generate chart html ###
     # remove the gaps between timestamp
     missings = get_missing_minutes(df)
+    fig.update_yaxes(fixedrange=True)
     fig.update_xaxes(rangebreaks=[
             dict(dvalue=5*60*1000, values=missings),
             dict(bounds=["sat", "mon"]),
