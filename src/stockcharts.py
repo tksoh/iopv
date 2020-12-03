@@ -79,7 +79,7 @@ def make_moving_average(df, window=20, name='MA'):
         'name': f'{name}-{window}'
     }
 
-    return ma
+    return  [x if x == "" else round(x, 3) for x in ma]
 
 
 def generate_kdj(df, window=9):
