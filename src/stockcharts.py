@@ -379,7 +379,7 @@ def make_chart(df, stock):
 
     # plot stock chart with embedded indicators
     fig = make_subplots(rows=2, cols=1,
-                        row_heights=[0.60, 0.40],
+                        row_heights=[0.70, 0.30],
                         vertical_spacing=0.02,
                         shared_xaxes=True,
                         specs=[[{"secondary_y": True}], [{"secondary_y": True}]])
