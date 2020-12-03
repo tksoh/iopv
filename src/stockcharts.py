@@ -407,7 +407,7 @@ def make_chart(df, stock):
         row=2, col=1
     )
     fig.add_trace(
-        go.Scatter(x=df.DATE, y=dv, name="D9", visible='legendonly',
+        go.Scatter(x=df.DATE, y=dv, name="D9",
                    line={'color': "orange"}), secondary_y=False,
         row=2, col=1
     )
