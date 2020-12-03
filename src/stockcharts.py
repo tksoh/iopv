@@ -428,7 +428,7 @@ def make_chart(df, stock):
     # generate chart html
     # hide dates with no values
     missing_dates = get_missing_dates(df)
-    fig.update_xaxes(rangebreaks=[dict(values=missing_dates)])
+    fig.update_xaxes(rangebreaks=[dict(values=missing_dates)], showgrid=True)
     fig.update_yaxes(fixedrange=True)
     dt = df.DATE.iloc[-1]
     title = f'{stock}<br>'\
