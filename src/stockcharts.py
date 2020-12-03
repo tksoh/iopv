@@ -379,7 +379,7 @@ def make_chart(df, stock):
 
     # plot stock chart with embedded indicators
     fig = make_subplots(rows=2, cols=1,
-                        row_heights=[0.65, 0.35],
+                        row_heights=[0.60, 0.40],
                         vertical_spacing=0.02,
                         shared_xaxes=True,
                         specs=[[{"secondary_y": True}], [{"secondary_y": True}]])
@@ -437,7 +437,7 @@ def make_chart(df, stock):
             f'<b>Date:</b>{dt}' \
             f'</span>'
     fig.update_layout(title_text=title, title_font_size=30, hovermode='x', barmode='stack',
-                      xaxis_rangeslider_visible=False)
+                      xaxis_rangeslider_visible=False, height=650)
     chart_data = {
         'CHART': fig,
         'STOCK': stock,
@@ -499,7 +499,7 @@ def make_minute_chart(df, stock):
             f'<b>Date:</b>{dt}' \
             f'</span>'
     fig.update_layout(title_text=title, title_font_size=30, hovermode='x', barmode='stack',
-                      xaxis_rangeslider_visible=False, height=400)
+                      xaxis_rangeslider_visible=False, height=300)
     chart_data = {
         'CHART': fig,
         'STOCK': stock,
