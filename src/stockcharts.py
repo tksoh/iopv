@@ -439,6 +439,12 @@ def make_chart(df, stock):
             f'</span>'
     fig.update_layout(title_text=title, title_font_size=30, hovermode='x', barmode='stack',
                       xaxis_rangeslider_visible=False, height=650)
+    fig.update_yaxes(
+        row=2, col=1,
+        range=[-10, 100],
+        autorange=False,
+        dtick=20
+    )
     chart_data = {
         'CHART': fig,
         'STOCK': stock,
