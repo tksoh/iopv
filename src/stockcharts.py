@@ -372,13 +372,14 @@ def make_chart(df, stock):
             # f'<br>High: {df.HIGH[i]}' +
             # f'<br>Low: {df.LOW[i]}' +
             # f'<br>Close: {df.CLOSE[i]}' +
-            f'<br>Daily change: ' +
-            f'<br>   {changes[i]} ({change_pcts[i]}%)'
+            f'<br>K9: {kv[i]}' +
+            f'<br>Chg: {changes[i]} ' +
+            f'<br>Chg: {change_pcts[i]}%'
         )
 
     # plot stock chart with embedded indicators
     fig = make_subplots(rows=2, cols=1,
-                        row_heights=[0.9, 0.1],
+                        row_heights=[0.65, 0.35],
                         vertical_spacing=0.02,
                         shared_xaxes=True,
                         specs=[[{"secondary_y": True}], [{"secondary_y": True}]])
@@ -402,13 +403,13 @@ def make_chart(df, stock):
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=kv, name="K9",
-                   line={'color': "blue"}), secondary_y=True,
-        row=1, col=1
+                   line={'color': "blue"}), secondary_y=False,
+        row=2, col=1
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=dv, name="D9", visible='legendonly',
-                   line={'color': "orange"}), secondary_y=True,
-        row=1, col=1
+                   line={'color': "orange"}), secondary_y=False,
+        row=2, col=1
     )
 
     chg_colors = ['#45ad57' if float(x) >= 0 else '#ff9166' for x in changes]
