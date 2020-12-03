@@ -138,6 +138,8 @@ def generate_kdj(df, window=9):
         'name': f'D{window}'
     }
 
+    kv = [x if x == "" else round(x, 2) for x in kv]
+    dv = [x if x == "" else round(x, 2) for x in dv]
     return kv, dv
 
 
