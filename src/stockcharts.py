@@ -414,8 +414,14 @@ def make_chart(df, stock):
 
     chg_colors = ['#45ad57' if float(x) >= 0 else '#ff9166' for x in changes]
     pct_colors = ['#2ca02c' if float(x) >= 0 else '#ad5a45' for x in change_pcts]
+    hovertext = []
+    for i in range(len(df.OPEN)):
+        hovertext.append(
+            f'({df.CLOSE[i]})'
+        )
     fig.add_trace(
         go.Bar(x=df.DATE, y=changes, name="CHANGE",
+               text=hovertext,
                marker_color=chg_colors), secondary_y=False,
         row=2, col=1
     )
