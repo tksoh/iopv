@@ -322,8 +322,6 @@ def make_firebase_charts(stocklist):
         df = pd.DataFrame(make_ohlc(stock_raw_data[-120:])).sort_values('DATE')
         fig, data = make_minute_chart(df, f'{stock} [5-min]')
         figs.append(fig)
-        data_list.append(data)
-
 
     backup = f'{OutputFile}.org'
     try:
