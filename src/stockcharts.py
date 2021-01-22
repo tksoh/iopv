@@ -554,7 +554,16 @@ def plot_table(data_list):
 
     blacks = ['black'] * row_num
     k9_colors = [color_scales[int(float(k))] for k in k9]
-    chg_colors = [('#db0000', '#02cf4d')[int(x['CHANGE'] >= 0)] for x in data_list]
+    chg_colors = []
+    for x in data_list:
+        chg = x['CHANGE']
+        if chg < 0:
+            chg_colors.append('#db0000')
+        elif chg > 0:
+            chg_colors.append('#02cf4d')
+        else:
+            chg_colors.append('gray')
+
     cell_colors = [blacks, k9_colors, blacks, blacks, chg_colors, chg_colors]
 
     fig = go.Figure(data=[go.Table(
