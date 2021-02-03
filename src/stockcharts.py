@@ -508,7 +508,7 @@ def make_minute_chart(df, stock):
     missings = get_missing_minutes(df)
     fig.update_yaxes(fixedrange=True)
     fig.update_xaxes(rangebreaks=[
-            dict(dvalue=5*60*1000, values=missings),
+            # dict(dvalue=5*60*1000, values=missings),
             dict(bounds=["sat", "mon"]),
             dict(bounds=[18, 9], pattern="hour")]
     )
