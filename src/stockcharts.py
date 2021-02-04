@@ -213,8 +213,6 @@ def get_missing_minutes(df):
     blank_dates = get_missing_dates(dates)
     for d in blank_dates:
         day = datetime.strptime(d, '%Y-%m-%d').isoweekday()
-        if day in (6, 7):
-            continue    # skip weekends
         sd = pd.to_datetime(d).strftime("%Y-%m-%d 09:00")
         ed = pd.to_datetime(d).strftime("%Y-%m-%d 17:55")
         dr = pd.date_range(start=sd, end=ed, freq='5T').strftime("%Y-%m-%d %H:%M").tolist()
@@ -508,8 +506,8 @@ def make_minute_chart(df, stock):
     missings = get_missing_minutes(df)
     fig.update_yaxes(fixedrange=True)
     fig.update_xaxes(rangebreaks=[
-            # dict(dvalue=5*60*1000, values=missings),
-            dict(bounds=["sat", "mon"]),
+            dict(dvalue=5*60*1000, values=missings),
+            #dict(bounds=["sat", "mon"]),
             dict(bounds=[18, 9], pattern="hour")]
     )
 
