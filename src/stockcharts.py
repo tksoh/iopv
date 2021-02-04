@@ -445,6 +445,9 @@ def make_chart(df, stock):
 
 
 def make_minute_chart(df, stock):
+    # strip seconds info from timestamps
+    df['DATE'] = [d.strftime("%Y-%m-%d %H:%M") for d in pd.to_datetime(df['DATE'])]
+
     # generate stock indicators
     mov5 = make_moving_average(df, window=5)
     mov20 = make_moving_average(df, window=20)
