@@ -183,40 +183,16 @@ def get_missing_dates(df):
 
 def get_missing_minutes(df):
     # build complete timeline from start date to end date
-    all_dates = []
     start_date, end_date = sorted([df['DATE'].iloc[0], df['DATE'].iloc[-1]])
     sd = pd.to_datetime(start_date).strftime("%Y-%m-%d %H:%M")
-    ed = pd.to_datetime(start_date).strftime("%Y-%m-%d 17:55")
-    dr = pd.date_range(start=sd, end=ed, freq='5T').strftime("%Y-%m-%d %H:%M").tolist()
-    all_dates += dr
-
-    sd = pd.to_datetime(end_date).strftime("%Y-%m-%d 09:05")
     ed = pd.to_datetime(end_date).strftime("%Y-%m-%d %H:%M")
-    dr = pd.date_range(start=sd, end=ed, freq='5T').strftime("%Y-%m-%d %H:%M").tolist()
-    all_dates += dr
-
-    unique_days = sorted(list(set([d.strftime("%Y-%m-%d") for d in pd.to_datetime(df['DATE'])])))
-    for d in unique_days[1:-1]:
-        sd = pd.to_datetime(d).strftime("%Y-%m-%d 09:05")
-        ed = pd.to_datetime(d).strftime("%Y-%m-%d 17:55")
-        dr = pd.date_range(start=sd, end=ed, freq='5T').strftime("%Y-%m-%d %H:%M").tolist()
-        all_dates += dr
+    all_dates = pd.date_range(start=sd, end=ed, freq='5T').strftime("%Y-%m-%d %H:%M").tolist()
 
     # retrieve the dates that ARE in the original dataset
     in_dates = [d.strftime("%Y-%m-%d %H:%M") for d in pd.to_datetime(df['DATE'])]
 
-    # define dates with missing values
+    # finds dates without values
     missings = [d for d in all_dates if d not in in_dates]
-
-    # fill in the missing days (holidays, weekends, etc)
-    dates = pd.DataFrame([{'DATE': x} for x in unique_days]).sort_values('DATE')
-    blank_dates = get_missing_dates(dates)
-    for d in blank_dates:
-        day = datetime.strptime(d, '%Y-%m-%d').isoweekday()
-        sd = pd.to_datetime(d).strftime("%Y-%m-%d 09:00")
-        ed = pd.to_datetime(d).strftime("%Y-%m-%d 17:55")
-        dr = pd.date_range(start=sd, end=ed, freq='5T').strftime("%Y-%m-%d %H:%M").tolist()
-        missings += dr
 
     return missings
 
@@ -508,7 +484,8 @@ def make_minute_chart(df, stock):
     fig.update_xaxes(rangebreaks=[
             dict(dvalue=5*60*1000, values=missings),
             #dict(bounds=["sat", "mon"]),
-            dict(bounds=[18, 9], pattern="hour")]
+            #dict(bounds=[18, 9], pattern="hour")
+        ]
     )
 
     dt = df.DATE.iloc[-1]
