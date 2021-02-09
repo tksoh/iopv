@@ -384,12 +384,12 @@ def make_chart(df, stock):
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=kv, name="K9",
-                   line={'color': "blue"}), secondary_y=False,
+                   line={'color': "blue"}), secondary_y=True,
         row=2, col=1
     )
     fig.add_trace(
         go.Scatter(x=df.DATE, y=dv, name="D9",
-                   line={'color': "orange"}), secondary_y=False,
+                   line={'color': "orange"}), secondary_y=True,
         row=2, col=1
     )
 
@@ -416,7 +416,8 @@ def make_chart(df, stock):
     # hide dates with no values
     missing_dates = get_missing_dates(df)
     fig.update_xaxes(rangebreaks=[dict(values=missing_dates)], showgrid=True)
-    fig.update_yaxes(fixedrange=True, side="right")
+    fig.update_yaxes(row=1, col=1, fixedrange=True, side="right")
+    fig.update_yaxes(row=2, col=1, fixedrange=True)
     dt = df.DATE.iloc[-1]
     title = f'{stock}<br>'\
             f'<span style="font-size: 16px;">' \
@@ -428,9 +429,15 @@ def make_chart(df, stock):
                       xaxis_rangeslider_visible=False, height=650)
     fig.update_yaxes(
         row=2, col=1,
-        range=[-10, 100],
+        range=[0, 100], secondary_y=True,
         autorange=False,
         dtick=20
+    )
+    fig.update_yaxes(
+        row=2, col=1,
+        range=[-15, 15], secondary_y=False,
+        autorange=False,
+        dtick=10
     )
     chart_data = {
         'CHART': fig,
