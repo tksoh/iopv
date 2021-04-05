@@ -290,12 +290,14 @@ def make_firebase_charts(stocklist):
         df = pd.DataFrame(stock_daily_data).sort_values('DATE')
         fig, data = make_chart(df, f'{stock} [Day]')
         figs.append(fig)
-        data_list.append(data)
+        stock_summary = data
 
         stock_raw_data = precond_minutes(stock_raw[ticker])
         df = pd.DataFrame(make_ohlc(stock_raw_data[-120:])).sort_values('DATE')
         fig, data = make_minute_chart(df, f'{stock} [5-min]')
         figs.append(fig)
+        stock_summary['UPDATED'] = data['UPDATED']
+        data_list.append(stock_summary)
 
     backup = f'{OutputFile}.org'
     try:
@@ -515,6 +517,7 @@ def make_minute_chart(df, stock):
         'CLOSE': cls,
         'CHANGE': chg,
         'CHANGE%': chg_pct,
+        'UPDATED': dt,
     }
     return fig, chart_data
 
@@ -529,9 +532,10 @@ def plot_table(data_list):
     closes = [f"{x['CLOSE']:.3f}" for x in data_list]
     change = [f"{x['CHANGE']:+.3f}" for x in data_list]
     change_pct = [f"{x['CHANGE%']:+.2f}" for x in data_list]
+    updated = [x['UPDATED'] for x in data_list]
 
     # setup cell colors
-    headers = ['STOCK', 'K9', 'D9', 'CLOSE', 'CHANGE', 'CHANGE%']
+    headers = ['STOCK', 'K9', 'D9', 'CLOSE', 'CHANGE', 'CHANGE%', 'UPDATED']
     row_num = len(stocks)
     col_num = len(headers)
     odd_even_colors = ('white', 'beige')
@@ -549,15 +553,15 @@ def plot_table(data_list):
         else:
             chg_colors.append('gray')
 
-    cell_colors = [blacks, k9_colors, blacks, blacks, chg_colors, chg_colors]
+    cell_colors = [blacks, k9_colors, blacks, blacks, chg_colors, chg_colors, blacks]
 
     fig = go.Figure(data=[go.Table(
-        columnwidth=[300, 80, 80, 80, 80, 80],
+        columnwidth=[200, 40, 40, 40, 40, 40, 80],
         header=dict(values=headers,
                     line_color='darkslategray',
                     fill_color='lightskyblue',
                     align='left'),
-        cells=dict(values=[stocks, k9, d9, closes, change, change_pct],
+        cells=dict(values=[stocks, k9, d9, closes, change, change_pct, updated],
                    line_color='darkslategray',
                    fill_color=[row_colors * col_num],
                    font=dict(color=cell_colors),
