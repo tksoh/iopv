@@ -533,7 +533,7 @@ def plot_table(data_list):
     d9 = [f"{x['D9']:.2f}" for x in data_list]
     closes = [f"{x['CLOSE']:.3f}" for x in data_list]
     change = [f"{x['CHANGE']:+.3f}" for x in data_list]
-    change_pct = [f"{x['CHANGE%']:+.2f}" for x in data_list]
+    change_pct = [f"{x['CHANGE%']:+.2f}%" for x in data_list]
     updated = [x['UPDATED'] for x in data_list]
 
     # setup cell colors
