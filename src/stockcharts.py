@@ -296,6 +296,8 @@ def make_firebase_charts(stocklist):
         df = pd.DataFrame(make_ohlc(stock_raw_data[-120:])).sort_values('DATE')
         fig, data = make_minute_chart(df, f'{stock} [5-min]')
         figs.append(fig)
+
+        stock_summary['TICKER'] = ticker
         stock_summary['UPDATED'] = data['UPDATED']
         data_list.append(stock_summary)
 
@@ -526,7 +528,7 @@ def plot_table(data_list):
     from plotly.colors import n_colors
     color_scales = n_colors('rgb(0, 255, 0)', 'rgb(255, 0, 0)', 100, colortype='rgb')
 
-    stocks = [x['STOCK'] for x in data_list]
+    stocks = [f"{x['TICKER']}: {x['STOCK']}" for x in data_list]
     k9 = [f"{x['K9']:.2f}" for x in data_list]
     d9 = [f"{x['D9']:.2f}" for x in data_list]
     closes = [f"{x['CLOSE']:.3f}" for x in data_list]
