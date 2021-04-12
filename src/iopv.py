@@ -9,8 +9,7 @@ import re
 import string
 from urllib.parse import urlparse
 
-
-Url = "http://www.bursamarketplace.com/mkt/themarket/etf"
+Url = "https://www.bursamarketplace.com/mkt/themarket/etf"
 Options = {}
 MaxRetry = 3
 RetryInterval = 3  # wait this many seconds before trying to reload webpage
