@@ -377,6 +377,11 @@ def make_chart(df, stock):
         row=1, col=1
     )
     fig.add_trace(
+        go.Scatter(x=df.DATE, y=df['CLOSE'], name="CLOSE", visible='legendonly',
+                   line={'color': "darkcyan"}), secondary_y=True,
+        row=1, col=1
+    )
+    fig.add_trace(
         go.Scatter(x=df.DATE, y=mov60, mode='lines', name=f"MA60",
                    line={'color': "green"}),
         row=1, col=1
