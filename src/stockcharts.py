@@ -197,12 +197,13 @@ def get_missing_minutes(df):
     return missings
 
 
-def html_title():
-    dt = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+def html_title(date):
+    dt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     title = f'<div style="margin-left: 5em;">' \
             f'<title>Bursa ETF IOPV</title>' \
             f'<h2>Bursa ETF IOPV</h2>' \
-            f'<h><i>{dt}</i></h>' \
+            f'<h><i>Chart updated: {dt}</i></h><br>' \
+            f'<h><i>Data updated:  {date}</i></h>' \
             f'</div>\n\n'
     return title
 
@@ -312,7 +313,9 @@ def make_firebase_charts(stocklist):
         pass
 
     with open(OutputFile, 'a') as f:
-        f.write(html_title())
+        latest_data = stock_raw[stock_dict[stocklist[0]]][-1]
+        latest_date = latest_data['DATE']
+        f.write(html_title(latest_date))
         table = plot_table(data_list)
         f.write(table)
         for fig in figs:
