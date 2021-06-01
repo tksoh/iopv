@@ -344,6 +344,17 @@ def make_csv_chart(filename):
         f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 
 
+def get_mov60_diff(df, mov60):
+    ma60_diff = []
+    for i, x in enumerate(mov60):
+        if pd.isna(x):
+            ma60_diff.append(x)
+        else:
+            delta_pct = (df.CLOSE[i] - x)/df.CLOSE[i]*100
+            ma60_diff.append(f"{delta_pct:.3f}")
+
+    return ma60_diff
+
 def make_chart(df, stock):
     # generate stock indicators
     mov60 = make_moving_average(df, window=60)
@@ -351,6 +362,7 @@ def make_chart(df, stock):
     kv, dv = generate_kdj(df)
     cls, chg, chg_pct = get_change(df)
     changes, change_pcts = make_changes(df)
+    ma60_diff = get_mov60_diff(df, mov60)
 
     # display daily change info on candlestick's hover
     hovertext = []
@@ -407,6 +419,7 @@ def make_chart(df, stock):
 
     chg_colors = ['#45ad57' if float(x) >= 0 else '#ff9166' for x in changes]
     pct_colors = ['#2ca02c' if float(x) >= 0 else '#ad5a45' for x in change_pcts]
+    ma60_diff_colors = ['green' if float(x) >= 0 else 'red' for x in ma60_diff]
     hovertext = []
     for i in range(len(df.OPEN)):
         hovertext.append(
@@ -421,6 +434,11 @@ def make_chart(df, stock):
     fig.add_trace(
         go.Bar(x=df.DATE, y=change_pcts, name="CHANGE%",
                marker_color=pct_colors), secondary_y=False,
+        row=2, col=1
+    )
+    fig.add_trace(
+        go.Bar(x=df.DATE, y=ma60_diff, name="MOV60_DIFF",
+               marker_color=ma60_diff_colors), secondary_y=True,
         row=2, col=1
     )
 
@@ -441,7 +459,7 @@ def make_chart(df, stock):
                       xaxis_rangeslider_visible=False, height=650)
     fig.update_yaxes(
         row=2, col=1,
-        range=[0, 100], secondary_y=True,
+        range=[-20, 100], secondary_y=True,
         autorange=False,
         dtick=20
     )
